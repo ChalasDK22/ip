@@ -37,6 +37,7 @@ public class Eden {
 
             else if (command.equals("list")) {
                 System.out.print(line);
+                System.out.print("Here are the tasks in your list:\n");
                 for (int i = 0; i < tasks.size(); i++) {
                     System.out.println((i + 1) + "." + tasks.get(i));
                 }
@@ -49,7 +50,7 @@ public class Eden {
                 task.mark();
                 System.out.print(line);
                 System.out.print("Nice! I've marked this task as done:\n");
-                System.out.print(task + "\n");
+                System.out.print("  " + task + "\n");
                 System.out.print(line);
             }
 
@@ -59,7 +60,47 @@ public class Eden {
                 task.unmark();
                 System.out.print(line);
                 System.out.print("OK, I've marked this task as not done yet:\n");
-                System.out.print(task + "\n");
+                System.out.print("  " + task + "\n");
+                System.out.print(line);
+            }
+
+            else if (command.startsWith("todo")) {
+                Task task = new Todo(command.substring("todo ".length()).trim());
+                tasks.add(task);
+                System.out.print(line);
+                System.out.print("Got it. I've added this task:\n");
+                System.out.print("  " + task + "\n");
+                System.out.print("Now you have " + tasks.size() + " in the list.\n");
+                System.out.print(line);
+            }
+
+            else if (command.startsWith("deadline")) {
+                String details = command.substring("deadline ".length()).trim();
+                String[] parts = details.split("\\s+/by\\s+", 2);
+                String description = parts[0].trim();
+                String by = parts[1].trim();
+                Task task = new Deadline(description, by);
+                tasks.add(task);
+                System.out.print(line);
+                System.out.print("Got it. I've added this task:\n");
+                System.out.print("  " + task + "\n");
+                System.out.print("Now you have " + tasks.size() + " in the list.\n");
+                System.out.print(line);
+            }
+
+            else if (command.startsWith("event ")) {
+                String details = command.substring("event ".length()).trim();
+                String[] fromParts = details.split("\\s+/from\\s+", 2);
+                String[] toParts = fromParts[1].split("\\s+/to\\s+", 2);
+                String description = fromParts[0].trim();
+                String from = toParts[0].trim();
+                String to = toParts[1].trim();
+                Task task = new Event(description, from, to);
+                tasks.add(task);
+                System.out.print(line);
+                System.out.print("Got it. I've added this task:\n");
+                System.out.print("  " + task + "\n");
+                System.out.print("Now you have " + tasks.size() + " in the list.\n");
                 System.out.print(line);
             }
 
