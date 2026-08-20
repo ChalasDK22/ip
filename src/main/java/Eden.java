@@ -15,7 +15,7 @@ public class Eden {
         
         Scanner scanner = new Scanner(System.in);
 
-        List<String> commands = new ArrayList<>();
+        List<Task> tasks = new ArrayList<>();
         
         String greetings = "Hello! I'm Eden.\n"
                 + "What can I do for you?\n";
@@ -37,13 +37,34 @@ public class Eden {
 
             else if (command.equals("list")) {
                 System.out.print(line);
-                for (int i = 0; i < commands.size(); i++) {
-                    System.out.println((i + 1) + ". " + commands.get(i));
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println((i + 1) + "." + tasks.get(i));
                 }
                 System.out.print(line);
             }
+
+            else if (command.startsWith("mark ")) {
+                int taskNumber = Integer.parseInt(command.substring(5));
+                Task task = tasks.get(taskNumber - 1);
+                task.mark();
+                System.out.print(line);
+                System.out.print("Nice! I've marked this task as done:\n");
+                System.out.print(task + "\n");
+                System.out.print(line);
+            }
+
+            else if (command.startsWith("unmark ")) {
+                int taskNumber = Integer.parseInt(command.substring(7));
+                Task task = tasks.get(taskNumber - 1);
+                task.unmark();
+                System.out.print(line);
+                System.out.print("OK, I've marked this task as not done yet:\n");
+                System.out.print(task + "\n");
+                System.out.print(line);
+            }
+
             else {
-                commands.add(command);
+                tasks.add(new Task(command));
                 System.out.print(line);
                 System.out.print("added: " + command + " \n");
                 System.out.print(line);
