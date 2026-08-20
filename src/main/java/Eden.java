@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 /**
  * Greets the user as Eden and then displays a farewell message.
@@ -12,6 +14,8 @@ public class Eden {
         String line = "____________________________________________________________\n";
         
         Scanner scanner = new Scanner(System.in);
+
+        List<String> commands = new ArrayList<>();
         
         String greetings = "Hello! I'm Eden.\n"
                 + "What can I do for you?\n";
@@ -31,9 +35,19 @@ public class Eden {
                 break;
             }
 
-            System.out.print(line);
-            System.out.print(command + " huh?\n");
-            System.out.print(line);
+            else if (command.equals("list")) {
+                System.out.print(line);
+                for (int i = 0; i < commands.size(); i++) {
+                    System.out.println((i + 1) + ". " + commands.get(i));
+                }
+                System.out.print(line);
+            }
+            else {
+                commands.add(command);
+                System.out.print(line);
+                System.out.print("added: " + command + " \n");
+                System.out.print(line);
+            }
         }
     }
 }
