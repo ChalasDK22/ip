@@ -30,19 +30,20 @@ public class Eden {
             String command = scanner.nextLine();
 
             try {
-                if (command.equals("bye")) {
+                CommandType commandType = CommandType.from(command);
+                if (commandType == CommandType.BYE) {
                     System.out.print(line);
                     System.out.print(bye);
                     System.out.print(line);
                     break;
-                } else if (command.equals("list")) {
+                } else if (commandType == CommandType.LIST) {
                     System.out.print(line);
                     System.out.print("Here are the tasks in your list:\n");
                     for (int i = 0; i < tasks.size(); i++) {
                         System.out.println((i + 1) + "." + tasks.get(i));
                     }
                     System.out.print(line);
-                } else if (command.startsWith("mark ")) {
+                } else if (commandType == CommandType.MARK) {
                     int taskNumber = Integer.parseInt(command.substring(5));
                     Task task = tasks.get(taskNumber - 1);
                     task.mark();
@@ -50,7 +51,7 @@ public class Eden {
                     System.out.print("Nice! I've marked this task as done:\n");
                     System.out.print("  " + task + "\n");
                     System.out.print(line);
-                } else if (command.startsWith("unmark ")) {
+                } else if (commandType == CommandType.UNMARK) {
                     int taskNumber = Integer.parseInt(command.substring(7));
                     Task task = tasks.get(taskNumber - 1);
                     task.unmark();
@@ -58,7 +59,7 @@ public class Eden {
                     System.out.print("OK, I've marked this task as not done yet:\n");
                     System.out.print("  " + task + "\n");
                     System.out.print(line);
-                } else if (command.startsWith("todo")) {
+                } else if (commandType == CommandType.TODO) {
                     String description = command.substring("todo".length()).trim();
                     if (description.isEmpty()) {
                         throw new EdenException(
@@ -71,7 +72,7 @@ public class Eden {
                     System.out.print("  " + task + "\n");
                     System.out.print("Now you have " + tasks.size() + " in the list.\n");
                     System.out.print(line);
-                } else if (command.startsWith("deadline")) {
+                } else if (commandType == CommandType.DEADLINE) {
                     String details = command.substring("deadline".length()).trim();
                     String[] parts = details.split("\\s+/by\\s+", 2);
                     String description = parts[0].trim();
@@ -87,7 +88,7 @@ public class Eden {
                     System.out.print("  " + task + "\n");
                     System.out.print("Now you have " + tasks.size() + " in the list.\n");
                     System.out.print(line);
-                } else if (command.startsWith("event ")) {
+                } else if (commandType == CommandType.EVENT) {
                     String details = command.substring("event".length()).trim();
                     String[] fromParts = details.split("\\s+/from\\s+", 2);
                     String[] toParts = fromParts[1].split("\\s+/to\\s+", 2);
@@ -105,10 +106,9 @@ public class Eden {
                     System.out.print("  " + task + "\n");
                     System.out.print("Now you have " + tasks.size() + " in the list.\n");
                     System.out.print(line);
-                } else if (command.startsWith("delete")){
+                } else if (commandType == CommandType.DELETE) {
                     int taskNumber = Integer.parseInt(command.substring(7));
-                    Task task = tasks.get(taskNumber - 1);
-                    tasks.remove(task);
+                    Task task = tasks.remove(taskNumber - 1);
                     System.out.print(line);
                     System.out.print("Noted. I've removed this task:\n");
                     System.out.print("  " + task + "\n");
