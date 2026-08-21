@@ -105,6 +105,15 @@ public class Eden {
                     System.out.print("  " + task + "\n");
                     System.out.print("Now you have " + tasks.size() + " in the list.\n");
                     System.out.print(line);
+                } else if (command.startsWith("delete")){
+                    int taskNumber = Integer.parseInt(command.substring(7));
+                    Task task = tasks.get(taskNumber - 1);
+                    tasks.remove(task);
+                    System.out.print(line);
+                    System.out.print("Noted. I've removed this task:\n");
+                    System.out.print("  " + task + "\n");
+                    System.out.print("Now you have " + tasks.size() + " in the list.\n");
+                    System.out.print(line);
                 } else {
                     throw new EdenException(
                             "OOPS!!! I'm sorry, but I don't know what that means :-(");
