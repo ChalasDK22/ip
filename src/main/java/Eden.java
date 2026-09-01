@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Scanner;
 
@@ -15,8 +15,17 @@ public class Eden {
         String line = "____________________________________________________________\n";
 
         Scanner scanner = new Scanner(System.in);
+        Storage storage = new Storage(Path.of("data", "eden.txt"));
+        List<Task> tasks;
 
-        List<Task> tasks = new ArrayList<>();
+        try {
+            tasks = storage.load();
+        } catch (EdenException exception) {
+            System.out.print(line);
+            System.out.println(exception.getMessage());
+            System.out.print(line);
+            return;
+        }
 
         String greetings = "Hello! I'm Eden.\n"
                 + "What can I do for you?\n";
@@ -47,6 +56,7 @@ public class Eden {
                     int taskNumber = Integer.parseInt(command.substring(5));
                     Task task = tasks.get(taskNumber - 1);
                     task.mark();
+                    storage.save(tasks);
                     System.out.print(line);
                     System.out.print("Nice! I've marked this task as done:\n");
                     System.out.print("  " + task + "\n");
@@ -55,6 +65,7 @@ public class Eden {
                     int taskNumber = Integer.parseInt(command.substring(7));
                     Task task = tasks.get(taskNumber - 1);
                     task.unmark();
+                    storage.save(tasks);
                     System.out.print(line);
                     System.out.print("OK, I've marked this task as not done yet:\n");
                     System.out.print("  " + task + "\n");
@@ -67,6 +78,7 @@ public class Eden {
                     }
                     Task task = new Todo(command.substring("todo".length()).trim());
                     tasks.add(task);
+                    storage.save(tasks);
                     System.out.print(line);
                     System.out.print("Got it. I've added this task:\n");
                     System.out.print("  " + task + "\n");
@@ -83,6 +95,7 @@ public class Eden {
                     String by = parts[1].trim();
                     Task task = new Deadline(description, by);
                     tasks.add(task);
+                    storage.save(tasks);
                     System.out.print(line);
                     System.out.print("Got it. I've added this task:\n");
                     System.out.print("  " + task + "\n");
@@ -101,6 +114,7 @@ public class Eden {
                     String to = toParts[1].trim();
                     Task task = new Event(description, from, to);
                     tasks.add(task);
+                    storage.save(tasks);
                     System.out.print(line);
                     System.out.print("Got it. I've added this task:\n");
                     System.out.print("  " + task + "\n");
@@ -109,6 +123,7 @@ public class Eden {
                 } else if (commandType == CommandType.DELETE) {
                     int taskNumber = Integer.parseInt(command.substring(7));
                     Task task = tasks.remove(taskNumber - 1);
+                    storage.save(tasks);
                     System.out.print(line);
                     System.out.print("Noted. I've removed this task:\n");
                     System.out.print("  " + task + "\n");
