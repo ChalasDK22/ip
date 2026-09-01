@@ -1,75 +1,46 @@
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Scanner;
 
 /**
- * Greets the user as Eden and then displays a farewell message.
+ * Runs the Eden task manager and coordinates its user interface and storage.
  */
 public class Eden {
     public static void main(String[] args) {
-        String banner = " _____    _            \n"
-                + "| ____|__| | ___ _ __  \n"
-                + "|  _| / _` |/ _ \\ '_ \\ \n"
-                + "| |__| (_| |  __/ | | |\n"
-                + "|_____|\\__,_|\\___|_| |_|\n";
-        String line = "____________________________________________________________\n";
-
-        Scanner scanner = new Scanner(System.in);
+        Ui ui = new Ui();
         Storage storage = new Storage(Path.of("data", "eden.txt"));
         List<Task> tasks;
 
         try {
             tasks = storage.load();
         } catch (EdenException exception) {
-            System.out.print(line);
-            System.out.println(exception.getMessage());
-            System.out.print(line);
+            ui.showError(exception.getMessage());
             return;
         }
 
-        String greetings = "Hello! I'm Eden.\n"
-                + "What can I do for you?\n";
-        String bye = "Bye. Hope to see you again soon!\n";
-        System.out.print(line);
-        System.out.print(banner);
-        System.out.print(greetings);
-        System.out.print(line);
+        ui.showWelcome();
 
         while (true) {
-            String command = scanner.nextLine();
+            String command = ui.readCommand();
 
             try {
                 CommandType commandType = CommandType.from(command);
                 if (commandType == CommandType.BYE) {
-                    System.out.print(line);
-                    System.out.print(bye);
-                    System.out.print(line);
+                    ui.showGoodbye();
                     break;
                 } else if (commandType == CommandType.LIST) {
-                    System.out.print(line);
-                    System.out.print("Here are the tasks in your list:\n");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        System.out.println((i + 1) + "." + tasks.get(i));
-                    }
-                    System.out.print(line);
+                    ui.showTaskList(tasks);
                 } else if (commandType == CommandType.MARK) {
                     int taskNumber = Integer.parseInt(command.substring(5));
                     Task task = tasks.get(taskNumber - 1);
                     task.mark();
                     storage.save(tasks);
-                    System.out.print(line);
-                    System.out.print("Nice! I've marked this task as done:\n");
-                    System.out.print("  " + task + "\n");
-                    System.out.print(line);
+                    ui.showTaskMarked(task);
                 } else if (commandType == CommandType.UNMARK) {
                     int taskNumber = Integer.parseInt(command.substring(7));
                     Task task = tasks.get(taskNumber - 1);
                     task.unmark();
                     storage.save(tasks);
-                    System.out.print(line);
-                    System.out.print("OK, I've marked this task as not done yet:\n");
-                    System.out.print("  " + task + "\n");
-                    System.out.print(line);
+                    ui.showTaskUnmarked(task);
                 } else if (commandType == CommandType.TODO) {
                     String description = command.substring("todo".length()).trim();
                     if (description.isEmpty()) {
@@ -79,11 +50,7 @@ public class Eden {
                     Task task = new Todo(command.substring("todo".length()).trim());
                     tasks.add(task);
                     storage.save(tasks);
-                    System.out.print(line);
-                    System.out.print("Got it. I've added this task:\n");
-                    System.out.print("  " + task + "\n");
-                    System.out.print("Now you have " + tasks.size() + " in the list.\n");
-                    System.out.print(line);
+                    ui.showTaskAdded(task, tasks.size());
                 } else if (commandType == CommandType.DEADLINE) {
                     String details = command.substring("deadline".length()).trim();
                     String[] parts = details.split("\\s+/by\\s+", 2);
@@ -96,11 +63,7 @@ public class Eden {
                     Task task = new Deadline(description, by);
                     tasks.add(task);
                     storage.save(tasks);
-                    System.out.print(line);
-                    System.out.print("Got it. I've added this task:\n");
-                    System.out.print("  " + task + "\n");
-                    System.out.print("Now you have " + tasks.size() + " in the list.\n");
-                    System.out.print(line);
+                    ui.showTaskAdded(task, tasks.size());
                 } else if (commandType == CommandType.EVENT) {
                     String details = command.substring("event".length()).trim();
                     String[] fromParts = details.split("\\s+/from\\s+", 2);
@@ -115,28 +78,18 @@ public class Eden {
                     Task task = new Event(description, from, to);
                     tasks.add(task);
                     storage.save(tasks);
-                    System.out.print(line);
-                    System.out.print("Got it. I've added this task:\n");
-                    System.out.print("  " + task + "\n");
-                    System.out.print("Now you have " + tasks.size() + " in the list.\n");
-                    System.out.print(line);
+                    ui.showTaskAdded(task, tasks.size());
                 } else if (commandType == CommandType.DELETE) {
                     int taskNumber = Integer.parseInt(command.substring(7));
                     Task task = tasks.remove(taskNumber - 1);
                     storage.save(tasks);
-                    System.out.print(line);
-                    System.out.print("Noted. I've removed this task:\n");
-                    System.out.print("  " + task + "\n");
-                    System.out.print("Now you have " + tasks.size() + " in the list.\n");
-                    System.out.print(line);
+                    ui.showTaskDeleted(task, tasks.size());
                 } else {
                     throw new EdenException(
                             "OOPS!!! I'm sorry, but I don't know what that means :-(");
                 }
             } catch (EdenException exception) {
-                System.out.print(line);
-                System.out.println(exception.getMessage());
-                System.out.print(line);
+                ui.showError(exception.getMessage());
             }
         }
     }
