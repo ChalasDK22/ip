@@ -1,3 +1,5 @@
+package eden.task;
+
 /**
  * Represents a task stored by Eden.
  */
@@ -45,7 +47,7 @@ public abstract class Task {
     /**
      * Converts this task to the line format used in Eden's data file.
      *
-     * @return a line that can be parsed by {@link Storage}
+     * @return this task in Eden's persistent text format
      */
     public abstract String toDataString();
 

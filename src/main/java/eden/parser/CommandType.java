@@ -1,3 +1,5 @@
+package eden.parser;
+
 /**
  * Represents the commands that Eden can process.
  */

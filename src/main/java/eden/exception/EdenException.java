@@ -1,3 +1,5 @@
+package eden.exception;
+
 /**
  * Represents an application error that Eden can explain to the user.
  */

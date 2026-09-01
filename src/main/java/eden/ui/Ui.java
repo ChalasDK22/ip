@@ -1,5 +1,9 @@
+package eden.ui;
+
 import java.util.List;
 import java.util.Scanner;
+
+import eden.task.Task;
 
 /**
  * Handles console input and output for Eden.

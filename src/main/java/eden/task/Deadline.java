@@ -1,3 +1,5 @@
+package eden.task;
+
 /**
  * Represents a task that must be completed by a given time.
  */

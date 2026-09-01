@@ -1,3 +1,5 @@
+package eden.task;
+
 /**
  * Represents a task that takes place between two times.
  */

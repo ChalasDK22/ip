@@ -1,4 +1,19 @@
+package eden;
+
 import java.nio.file.Path;
+
+import eden.command.Command;
+import eden.command.ExitCommand;
+import eden.command.ListCommand;
+import eden.exception.EdenException;
+import eden.parser.CommandType;
+import eden.storage.Storage;
+import eden.task.Deadline;
+import eden.task.Event;
+import eden.task.Task;
+import eden.task.TaskList;
+import eden.task.Todo;
+import eden.ui.Ui;
 
 /**
  * Runs the Eden task manager and coordinates its user interface and storage.

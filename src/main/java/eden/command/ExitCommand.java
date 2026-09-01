@@ -1,3 +1,9 @@
+package eden.command;
+
+import eden.storage.Storage;
+import eden.task.TaskList;
+import eden.ui.Ui;
+
 /**
  * Ends the current Eden session.
  */
