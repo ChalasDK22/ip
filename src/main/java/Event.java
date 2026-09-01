@@ -1,3 +1,6 @@
+/**
+ * Represents a task that takes place between two times.
+ */
 public class Event extends Task {
     private String from;
     private String to;
@@ -6,6 +9,13 @@ public class Event extends Task {
         super(description);
         this.from = from;
         this.to = to;
+    }
+
+    @Override
+    public String toDataString() {
+        return "E | " + (isMarked() ? "1" : "0") + " | "
+                + escapeDataField(getDescription()) + " | " + escapeDataField(this.from)
+                + " | " + escapeDataField(this.to);
     }
 
     @Override
