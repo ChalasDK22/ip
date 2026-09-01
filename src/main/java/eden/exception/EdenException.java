@@ -6,6 +6,11 @@ package eden.exception;
 public class EdenException extends Exception {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Creates an Eden error with a user-facing explanation.
+     *
+     * @param message explanation suitable for displaying to the user
+     */
     public EdenException(String message) {
         super(message);
     }

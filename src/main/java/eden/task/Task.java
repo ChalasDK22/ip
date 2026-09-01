@@ -7,6 +7,11 @@ public abstract class Task {
     private String description;
     private boolean isMarked;
 
+    /**
+     * Creates an unmarked task with the given description.
+     *
+     * @param description task description
+     */
     public Task(String description) {
         this.description = description;
         this.isMarked = false;
@@ -52,7 +57,7 @@ public abstract class Task {
     public abstract String toDataString();
 
     /**
-     * Escapes characters that have a structural meaning in the data file.
+     * Escapes backslashes and pipe characters within one stored data field.
      * Backslashes are escaped first so loading can distinguish a literal
      * backslash from the escape marker before a pipe.
      *

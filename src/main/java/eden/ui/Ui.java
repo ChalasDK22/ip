@@ -27,9 +27,9 @@ public class Ui {
     }
 
     /**
-     * Reads the next command entered by the user.
+     * Reads the text of the next input line as a command.
      *
-     * @return the command exactly as entered
+     * @return command text without the line terminator
      */
     public String readCommand() {
         return this.scanner.nextLine();

@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
  * Tests TaskList's one-based task operations and collection encapsulation.
  */
 public class TaskListTest {
+    /**
+     * Verifies that one-based mark and unmark operations affect only the selected task.
+     */
     @Test
     public void markAndUnmark_secondTask_changesOnlyRequestedTask() {
         Task firstTask = new Todo("first task");
@@ -38,6 +41,9 @@ public class TaskListTest {
                 () -> assertFalse(secondTask.isMarked()));
     }
 
+    /**
+     * Verifies that deletion returns the selected task and preserves remaining order.
+     */
     @Test
     public void delete_secondTask_removesItAndPreservesOrder() {
         Task firstTask = new Todo("first task");
@@ -53,6 +59,9 @@ public class TaskListTest {
                 () -> assertIterableEquals(List.of(firstTask, thirdTask), tasks.asList()));
     }
 
+    /**
+     * Verifies that invalid task numbers fail without mutating the list.
+     */
     @Test
     public void invalidTaskNumbers_throwWithoutChangingTasks() {
         Task onlyTask = new Todo("only task");
@@ -68,6 +77,9 @@ public class TaskListTest {
                 () -> assertFalse(onlyTask.isMarked()));
     }
 
+    /**
+     * Verifies that construction and read-only views do not expose structural mutation.
+     */
     @Test
     public void constructorAndAsList_doNotExposeMutableStructure() {
         Task firstTask = new Todo("first task");

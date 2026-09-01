@@ -10,6 +10,12 @@ import eden.ui.Ui;
  */
 public abstract class Command {
     /**
+     * Creates a command.
+     */
+    public Command() {
+    }
+
+    /**
      * Executes this command using Eden's application collaborators.
      *
      * @param tasks task list on which the command operates
