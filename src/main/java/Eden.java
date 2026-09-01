@@ -1,13 +1,11 @@
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Runs the Eden task manager and coordinates its user interface and storage.
  */
 public class Eden {
     private final Storage storage;
-    private final List<Task> tasks;
+    private final TaskList tasks;
     private final Ui ui;
 
     /**
@@ -24,11 +22,11 @@ public class Eden {
         this.ui = new Ui();
         this.storage = new Storage(filePath);
 
-        List<Task> loadedTasks = new ArrayList<>();
+        TaskList loadedTasks = new TaskList();
         boolean loadedSuccessfully = false;
 
         try {
-            loadedTasks = this.storage.load();
+            loadedTasks = new TaskList(this.storage.load());
             loadedSuccessfully = true;
         } catch (EdenException exception) {
             this.ui.showError(exception.getMessage());
@@ -57,18 +55,16 @@ public class Eden {
                     this.ui.showGoodbye();
                     break;
                 } else if (commandType == CommandType.LIST) {
-                    this.ui.showTaskList(this.tasks);
+                    this.ui.showTaskList(this.tasks.asList());
                 } else if (commandType == CommandType.MARK) {
                     int taskNumber = Integer.parseInt(command.substring(5));
-                    Task task = this.tasks.get(taskNumber - 1);
-                    task.mark();
-                    this.storage.save(this.tasks);
+                    Task task = this.tasks.mark(taskNumber);
+                    this.storage.save(this.tasks.asList());
                     this.ui.showTaskMarked(task);
                 } else if (commandType == CommandType.UNMARK) {
                     int taskNumber = Integer.parseInt(command.substring(7));
-                    Task task = this.tasks.get(taskNumber - 1);
-                    task.unmark();
-                    this.storage.save(this.tasks);
+                    Task task = this.tasks.unmark(taskNumber);
+                    this.storage.save(this.tasks.asList());
                     this.ui.showTaskUnmarked(task);
                 } else if (commandType == CommandType.TODO) {
                     String description = command.substring("todo".length()).trim();
@@ -78,7 +74,7 @@ public class Eden {
                     }
                     Task task = new Todo(command.substring("todo".length()).trim());
                     this.tasks.add(task);
-                    this.storage.save(this.tasks);
+                    this.storage.save(this.tasks.asList());
                     this.ui.showTaskAdded(task, this.tasks.size());
                 } else if (commandType == CommandType.DEADLINE) {
                     String details = command.substring("deadline".length()).trim();
@@ -91,7 +87,7 @@ public class Eden {
                     String by = parts[1].trim();
                     Task task = new Deadline(description, by);
                     this.tasks.add(task);
-                    this.storage.save(this.tasks);
+                    this.storage.save(this.tasks.asList());
                     this.ui.showTaskAdded(task, this.tasks.size());
                 } else if (commandType == CommandType.EVENT) {
                     String details = command.substring("event".length()).trim();
@@ -106,12 +102,12 @@ public class Eden {
                     String to = toParts[1].trim();
                     Task task = new Event(description, from, to);
                     this.tasks.add(task);
-                    this.storage.save(this.tasks);
+                    this.storage.save(this.tasks.asList());
                     this.ui.showTaskAdded(task, this.tasks.size());
                 } else if (commandType == CommandType.DELETE) {
                     int taskNumber = Integer.parseInt(command.substring(7));
-                    Task task = this.tasks.remove(taskNumber - 1);
-                    this.storage.save(this.tasks);
+                    Task task = this.tasks.delete(taskNumber);
+                    this.storage.save(this.tasks.asList());
                     this.ui.showTaskDeleted(task, this.tasks.size());
                 } else {
                     throw new EdenException(
