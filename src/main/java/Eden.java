@@ -46,38 +46,42 @@ public class Eden {
 
         this.ui.showWelcome();
 
-        while (true) {
-            String command = this.ui.readCommand();
+        boolean isExit = false;
+        while (!isExit) {
+            String fullCommand = this.ui.readCommand();
 
             try {
-                CommandType commandType = CommandType.from(command);
+                CommandType commandType = CommandType.from(fullCommand);
                 if (commandType == CommandType.BYE) {
-                    this.ui.showGoodbye();
-                    break;
+                    Command command = new ExitCommand();
+                    command.execute(this.tasks, this.ui, this.storage);
+                    isExit = command.isExit();
                 } else if (commandType == CommandType.LIST) {
-                    this.ui.showTaskList(this.tasks.asList());
+                    Command command = new ListCommand();
+                    command.execute(this.tasks, this.ui, this.storage);
+                    isExit = command.isExit();
                 } else if (commandType == CommandType.MARK) {
-                    int taskNumber = Integer.parseInt(command.substring(5));
+                    int taskNumber = Integer.parseInt(fullCommand.substring(5));
                     Task task = this.tasks.mark(taskNumber);
                     this.storage.save(this.tasks.asList());
                     this.ui.showTaskMarked(task);
                 } else if (commandType == CommandType.UNMARK) {
-                    int taskNumber = Integer.parseInt(command.substring(7));
+                    int taskNumber = Integer.parseInt(fullCommand.substring(7));
                     Task task = this.tasks.unmark(taskNumber);
                     this.storage.save(this.tasks.asList());
                     this.ui.showTaskUnmarked(task);
                 } else if (commandType == CommandType.TODO) {
-                    String description = command.substring("todo".length()).trim();
+                    String description = fullCommand.substring("todo".length()).trim();
                     if (description.isEmpty()) {
                         throw new EdenException(
                             "OOPS!!! The description of a todo cannot be empty.");
                     }
-                    Task task = new Todo(command.substring("todo".length()).trim());
+                    Task task = new Todo(fullCommand.substring("todo".length()).trim());
                     this.tasks.add(task);
                     this.storage.save(this.tasks.asList());
                     this.ui.showTaskAdded(task, this.tasks.size());
                 } else if (commandType == CommandType.DEADLINE) {
-                    String details = command.substring("deadline".length()).trim();
+                    String details = fullCommand.substring("deadline".length()).trim();
                     String[] parts = details.split("\\s+/by\\s+", 2);
                     String description = parts[0].trim();
                     if (description.isEmpty()) {
@@ -90,7 +94,7 @@ public class Eden {
                     this.storage.save(this.tasks.asList());
                     this.ui.showTaskAdded(task, this.tasks.size());
                 } else if (commandType == CommandType.EVENT) {
-                    String details = command.substring("event".length()).trim();
+                    String details = fullCommand.substring("event".length()).trim();
                     String[] fromParts = details.split("\\s+/from\\s+", 2);
                     String[] toParts = fromParts[1].split("\\s+/to\\s+", 2);
                     String description = fromParts[0].trim();
@@ -105,7 +109,7 @@ public class Eden {
                     this.storage.save(this.tasks.asList());
                     this.ui.showTaskAdded(task, this.tasks.size());
                 } else if (commandType == CommandType.DELETE) {
-                    int taskNumber = Integer.parseInt(command.substring(7));
+                    int taskNumber = Integer.parseInt(fullCommand.substring(7));
                     Task task = this.tasks.delete(taskNumber);
                     this.storage.save(this.tasks.asList());
                     this.ui.showTaskDeleted(task, this.tasks.size());
