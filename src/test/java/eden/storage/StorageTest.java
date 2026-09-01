@@ -29,6 +29,9 @@ public class StorageTest {
     @TempDir
     private Path tempDirectory;
 
+    /**
+     * Verifies that persistence preserves every task type, status, and escaped text.
+     */
     @Test
     public void saveAndLoad_allTaskTypesWithEscapedText_restoresTasks()
             throws EdenException, IOException {
@@ -66,6 +69,9 @@ public class StorageTest {
                 () -> assertTrue(loadedTasks.get(2).isMarked()));
     }
 
+    /**
+     * Verifies that a missing data file loads as an empty list without creating files.
+     */
     @Test
     public void load_missingFile_returnsEmptyWithoutCreatingFile() throws EdenException {
         Path dataFile = this.tempDirectory.resolve("missing folder").resolve("eden.txt");
@@ -79,6 +85,9 @@ public class StorageTest {
                 () -> assertFalse(Files.exists(dataFile.getParent())));
     }
 
+    /**
+     * Verifies that saving replaces rather than appends to existing task data.
+     */
     @Test
     public void save_existingData_replacesOldContents() throws EdenException, IOException {
         Path dataFile = this.tempDirectory.resolve("eden.txt");
@@ -102,6 +111,9 @@ public class StorageTest {
                 () -> assertTrue(loadedTasks.get(0).isMarked()));
     }
 
+    /**
+     * Verifies that malformed records report their physical source line.
+     */
     @Test
     public void load_malformedData_throwsLineNumberedError() {
         assertAll(
@@ -121,6 +133,9 @@ public class StorageTest {
                         List.of("T | 0 | bad\\"), 1));
     }
 
+    /**
+     * Verifies that file-system save failures are wrapped as Eden errors.
+     */
     @Test
     public void save_unusableParentPath_wrapsFileSystemError() throws IOException {
         Path blockingFile = this.tempDirectory.resolve("not-a-directory");
@@ -139,6 +154,11 @@ public class StorageTest {
 
     /**
      * Writes malformed task data and checks the public loading error contract.
+     *
+     * @param fileName unique temporary data-file name
+     * @param lines malformed lines to write
+     * @param expectedLine physical line number expected in the error
+     * @throws IOException if the temporary data file cannot be written
      */
     private void assertInvalidData(String fileName, List<String> lines, int expectedLine)
             throws IOException {

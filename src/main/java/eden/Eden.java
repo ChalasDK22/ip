@@ -29,7 +29,8 @@ public class Eden {
     private final boolean isReady;
 
     /**
-     * Creates Eden and loads tasks from the given data file.
+     * Creates Eden and attempts to load tasks from the given data file.
+     * If loading fails, Eden displays the loading error and will not process commands.
      *
      * @param filePath path to the task data file
      */
@@ -52,7 +53,8 @@ public class Eden {
     }
 
     /**
-     * Greets the user and processes commands until the user exits.
+     * Greets the user and processes commands until the user exits, provided that
+     * the task data loaded successfully. Otherwise, this method returns immediately.
      */
     public void run() {
         if (!this.isReady) {
@@ -139,7 +141,8 @@ public class Eden {
     }
 
     /**
-     * Starts Eden using the default task data file.
+     * Starts Eden using {@code data/eden.txt}, resolved relative to the process's
+     * working directory.
      *
      * @param args command-line arguments, which Eden does not use
      */

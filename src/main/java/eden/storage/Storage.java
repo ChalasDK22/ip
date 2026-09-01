@@ -31,7 +31,8 @@ public class Storage {
     }
 
     /**
-     * Loads all tasks from the data file. A missing file represents an empty task list.
+     * Loads all tasks from the data file. A missing file represents an empty task list,
+     * and blank lines in an existing file are ignored.
      *
      * @return tasks reconstructed from the file
      * @throws EdenException if the file cannot be read or contains invalid data

@@ -40,6 +40,7 @@ public class TaskList {
      *
      * @param taskNumber number shown to the user
      * @return the deleted task
+     * @throws IndexOutOfBoundsException if the task number is outside the list
      */
     public Task delete(int taskNumber) {
         return this.tasks.remove(toIndex(taskNumber));
@@ -50,6 +51,7 @@ public class TaskList {
      *
      * @param taskNumber number shown to the user
      * @return the marked task
+     * @throws IndexOutOfBoundsException if the task number is outside the list
      */
     public Task mark(int taskNumber) {
         Task task = getTask(taskNumber);
@@ -62,6 +64,7 @@ public class TaskList {
      *
      * @param taskNumber number shown to the user
      * @return the unmarked task
+     * @throws IndexOutOfBoundsException if the task number is outside the list
      */
     public Task unmark(int taskNumber) {
         Task task = getTask(taskNumber);
