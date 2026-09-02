@@ -86,4 +86,33 @@ public class TaskListTest {
                         () -> tasks.asList().add(new Todo("leaked task"))));
         assertEquals(2, tasks.size());
     }
+
+    @Test
+    public void find_mixedCaseKeyword_matchesDescriptionSubstringInOriginalOrder() {
+        Todo firstTask = new Todo("Read Book");
+        Deadline secondTask = new Deadline("return book", "Sunday");
+        Event metadataOnlyTask = new Event("project meeting", "book room", "4pm");
+        Todo fourthTask = new Todo("bookshop coupon");
+        TaskList tasks = new TaskList(List.of(
+                firstTask, secondTask, metadataOnlyTask, fourthTask));
+
+        List<Task> matches = tasks.find("BOOK");
+
+        assertAll(
+                () -> assertIterableEquals(
+                        List.of(firstTask, secondTask, fourthTask), matches),
+                () -> assertEquals(4, tasks.size()),
+                () -> assertThrows(UnsupportedOperationException.class,
+                        () -> matches.add(new Todo("mutation"))));
+    }
+
+    @Test
+    public void find_missingOrBlankKeyword_returnsEmptyMatches() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        assertAll(
+                () -> assertTrue(tasks.find("magazine").isEmpty()),
+                () -> assertTrue(tasks.find("   ").isEmpty()),
+                () -> assertEquals(1, tasks.size()));
+    }
 }

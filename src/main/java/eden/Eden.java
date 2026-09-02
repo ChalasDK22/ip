@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import eden.command.Command;
 import eden.command.ExitCommand;
+import eden.command.FindCommand;
 import eden.command.ListCommand;
 import eden.exception.EdenException;
 import eden.parser.CommandType;
@@ -74,6 +75,11 @@ public class Eden {
                 } else if (commandType == CommandType.LIST) {
                     Command command = new ListCommand();
                     command.execute(this.tasks, this.ui, this.storage);
+                    isExit = command.isExit();
+                } else if (commandType == CommandType.FIND) {
+                    String keyword = fullCommand.substring("find".length()).trim();
+                    Command command = new FindCommand(keyword);
+                    command.execute(tasks, ui, storage);
                     isExit = command.isExit();
                 } else if (commandType == CommandType.MARK) {
                     int taskNumber = Integer.parseInt(fullCommand.substring(5));

@@ -6,6 +6,7 @@ package eden.parser;
 public enum CommandType {
     BYE,
     LIST,
+    FIND,
     MARK,
     UNMARK,
     TODO,
