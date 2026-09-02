@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,5 +98,41 @@ public class TaskListTest {
                 () -> assertThrows(UnsupportedOperationException.class,
                         () -> tasks.asList().add(new Todo("leaked task"))));
         assertEquals(2, tasks.size());
+    }
+
+    /**
+     * Verifies case-insensitive, description-only substring matching and result order.
+     */
+    @Test
+    public void find_mixedCaseKeyword_matchesDescriptionSubstringInOriginalOrder() {
+        Todo firstTask = new Todo("Read Book");
+        Deadline secondTask = new Deadline(
+                "return book", LocalDate.of(2025, 6, 6));
+        Event metadataOnlyTask = new Event("project meeting", "book room", "4pm");
+        Todo fourthTask = new Todo("bookshop coupon");
+        TaskList tasks = new TaskList(List.of(
+                firstTask, secondTask, metadataOnlyTask, fourthTask));
+
+        List<Task> matches = tasks.find("BOOK");
+
+        assertAll(
+                () -> assertIterableEquals(
+                        List.of(firstTask, secondTask, fourthTask), matches),
+                () -> assertEquals(4, tasks.size()),
+                () -> assertThrows(UnsupportedOperationException.class,
+                        () -> matches.add(new Todo("mutation"))));
+    }
+
+    /**
+     * Verifies that absent and blank keywords produce no matches without mutation.
+     */
+    @Test
+    public void find_missingOrBlankKeyword_returnsEmptyMatches() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        assertAll(
+                () -> assertTrue(tasks.find("magazine").isEmpty()),
+                () -> assertTrue(tasks.find("   ").isEmpty()),
+                () -> assertEquals(1, tasks.size()));
     }
 }

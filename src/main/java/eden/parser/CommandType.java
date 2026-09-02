@@ -1,5 +1,7 @@
 package eden.parser;
 
+import java.util.Locale;
+
 /**
  * Represents the commands that Eden can process.
  */
@@ -8,6 +10,8 @@ public enum CommandType {
     BYE,
     /** Displays all tasks. */
     LIST,
+    /** Finds tasks whose descriptions contain a keyword. */
+    FIND,
     /** Marks a task as completed. */
     MARK,
     /** Marks a task as not completed. */
@@ -38,7 +42,7 @@ public enum CommandType {
 
         String commandWord = trimmedInput.split("\\s+", 2)[0];
         try {
-            return CommandType.valueOf(commandWord.toUpperCase());
+            return CommandType.valueOf(commandWord.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
             return UNKNOWN;
         }

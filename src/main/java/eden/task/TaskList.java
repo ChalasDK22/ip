@@ -3,6 +3,7 @@ package eden.task;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Owns and manages Eden's tasks using the one-based task numbers shown to users.
@@ -88,6 +89,28 @@ public class TaskList {
      */
     public List<Task> asList() {
         return Collections.unmodifiableList(tasks);
+    }
+
+    /**
+     * Finds tasks whose descriptions contain the keyword, ignoring letter case.
+     *
+     * @param keyword text to find within task descriptions.
+     * @return matching tasks in their original order.
+     */
+    public List<Task> find(String keyword) {
+        if (keyword.isBlank()) {
+            return List.of();
+        }
+
+        String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
+        List<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            String normalizedDescription = task.getDescription().toLowerCase(Locale.ROOT);
+            if (normalizedDescription.contains(normalizedKeyword)) {
+                matchingTasks.add(task);
+            }
+        }
+        return Collections.unmodifiableList(matchingTasks);
     }
 
     /**

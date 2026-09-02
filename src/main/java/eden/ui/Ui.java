@@ -71,6 +71,20 @@ public class Ui {
     }
 
     /**
+     * Displays tasks matching a find command using one-based result numbering.
+     *
+     * @param matchingTasks matching tasks to display.
+     */
+    public void showMatchingTasks(List<Task> matchingTasks) {
+        System.out.print(DIVIDER);
+        System.out.print("Here are the matching tasks in your list:\n");
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            System.out.println((i + 1) + "." + matchingTasks.get(i));
+        }
+        System.out.print(DIVIDER);
+    }
+
+    /**
      * Confirms that a task was marked as completed.
      *
      * @param task task that was marked.
