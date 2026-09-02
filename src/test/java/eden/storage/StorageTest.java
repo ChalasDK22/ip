@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -40,13 +41,13 @@ public class StorageTest {
 
         Todo todo = new Todo("read | book \\ notes");
         todo.mark();
-        Deadline deadline = new Deadline("return book", "Sunday | 5pm");
+        Deadline deadline = new Deadline("return book", LocalDate.of(2024, 2, 29));
         Event event = new Event("project \\ meeting", "2pm", "4pm | online");
         event.mark();
 
         List<String> expectedLines = List.of(
                 "T | 1 | read \\| book \\\\ notes",
-                "D | 0 | return book | Sunday \\| 5pm",
+                "D | 0 | return book | 2024-02-29",
                 "E | 1 | project \\\\ meeting | 2pm | 4pm \\| online");
 
         storage.save(List.of(todo, deadline, event));
@@ -96,17 +97,18 @@ public class StorageTest {
                 new Todo("obsolete task"),
                 new Event("obsolete event", "2pm", "3pm")));
 
-        Deadline replacement = new Deadline("submit report", "Friday");
+        Deadline replacement = new Deadline(
+                "submit report", LocalDate.of(2025, 12, 5));
         replacement.mark();
         storage.save(List.of(replacement));
 
         List<Task> loadedTasks = storage.load();
         assertAll(
-                () -> assertEquals(List.of("D | 1 | submit report | Friday"),
+                () -> assertEquals(List.of("D | 1 | submit report | 2025-12-05"),
                         Files.readAllLines(dataFile, StandardCharsets.UTF_8)),
                 () -> assertEquals(1, loadedTasks.size()),
                 () -> assertInstanceOf(Deadline.class, loadedTasks.get(0)),
-                () -> assertEquals("D | 1 | submit report | Friday",
+                () -> assertEquals("D | 1 | submit report | 2025-12-05",
                         loadedTasks.get(0).toDataString()),
                 () -> assertTrue(loadedTasks.get(0).isMarked()));
     }
@@ -127,6 +129,10 @@ public class StorageTest {
                         List.of("T | 0 | task | extra"), 1),
                 () -> assertInvalidData("blank-description.txt",
                         List.of("T | 0 |   "), 1),
+                () -> assertInvalidDeadlineDate("non-iso-deadline-date.txt",
+                        List.of("D | 0 | return book | 2025-2-3"), 1),
+                () -> assertInvalidDeadlineDate("impossible-deadline-date.txt",
+                        List.of("T | 0 | valid", "D | 0 | impossible | 2025-02-29"), 2),
                 () -> assertInvalidData("invalid-escape.txt",
                         List.of("T | 0 | bad\\q"), 1),
                 () -> assertInvalidData("dangling-escape.txt",
@@ -171,5 +177,26 @@ public class StorageTest {
         assertEquals("OOPS!!! The task data in " + dataFile
                 + " is invalid at line " + expectedLine
                 + ". Expected fields separated by ' | '.", exception.getMessage());
+    }
+
+    /**
+     * Writes a malformed deadline date and checks its line-numbered loading error.
+     *
+     * @param fileName unique temporary data-file name
+     * @param lines lines containing the invalid deadline date
+     * @param expectedLine physical line number expected in the error
+     * @throws IOException if the temporary data file cannot be written
+     */
+    private void assertInvalidDeadlineDate(
+            String fileName, List<String> lines, int expectedLine) throws IOException {
+        Path dataFile = this.tempDirectory.resolve(fileName);
+        Files.write(dataFile, lines, StandardCharsets.UTF_8);
+
+        EdenException exception = assertThrows(EdenException.class,
+                () -> new Storage(dataFile).load());
+
+        assertEquals("OOPS!!! The deadline date in " + dataFile
+                + " is invalid at line " + expectedLine
+                + ". Expected yyyy-MM-dd.", exception.getMessage());
     }
 }

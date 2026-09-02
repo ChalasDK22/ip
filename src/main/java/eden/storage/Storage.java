@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +103,7 @@ public class Storage {
         case "D":
             requireFieldCount(fields, 4, lineNumber);
             task = new Deadline(requireText(fields.get(2), lineNumber),
-                    requireText(fields.get(3), lineNumber));
+                    parseDeadlineDate(requireText(fields.get(3), lineNumber), lineNumber));
             break;
         case "E":
             requireFieldCount(fields, 5, lineNumber);
@@ -152,6 +155,22 @@ public class Storage {
     }
 
     /**
+     * Parses a stored deadline date in ISO format.
+     *
+     * @param dateText stored deadline date
+     * @param lineNumber physical line containing the date
+     * @return parsed date
+     * @throws EdenException if the stored date is invalid
+     */
+    private LocalDate parseDeadlineDate(String dateText, int lineNumber) throws EdenException {
+        try {
+            return LocalDate.parse(dateText, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (DateTimeParseException exception) {
+            throw invalidDeadlineDate(lineNumber);
+        }
+    }
+
+    /**
      * Converts the stored 0/1 completion flag to a boolean.
      */
     private boolean parseStatus(String status, int lineNumber) throws EdenException {
@@ -191,5 +210,13 @@ public class Storage {
         return new EdenException("OOPS!!! The task data in " + this.filePath
                 + " is invalid at line " + lineNumber + ". Expected fields separated by '"
                 + FIELD_SEPARATOR + "'.");
+    }
+
+    /**
+     * Creates a consistent error for an invalid stored deadline date.
+     */
+    private EdenException invalidDeadlineDate(int lineNumber) {
+        return new EdenException("OOPS!!! The deadline date in " + this.filePath
+                + " is invalid at line " + lineNumber + ". Expected yyyy-MM-dd.");
     }
 }

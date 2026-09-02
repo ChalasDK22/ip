@@ -1,6 +1,9 @@
 package eden;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import eden.command.Command;
 import eden.command.ExitCommand;
@@ -19,6 +22,10 @@ import eden.ui.Ui;
  * Runs the Eden task manager and coordinates its user interface and storage.
  */
 public class Eden {
+    private static final String DEADLINE_DATE_ERROR =
+            "OOPS!!! Please enter the deadline date as yyyy-MM-dd "
+                    + "(e.g., 2019-12-02).";
+
     private final Storage storage;
     private final TaskList tasks;
     private final Ui ui;
@@ -99,13 +106,16 @@ public class Eden {
                     this.ui.showTaskAdded(task, this.tasks.size());
                 } else if (commandType == CommandType.DEADLINE) {
                     String details = fullCommand.substring("deadline".length()).trim();
-                    String[] parts = details.split("\\s+/by\\s+", 2);
+                    String[] parts = details.split("(?:^|\\s+)/by\\s+", 2);
                     String description = parts[0].trim();
                     if (description.isEmpty()) {
                         throw new EdenException(
                             "OOPS!!! The description of a deadline cannot be empty.");
                     }
-                    String by = parts[1].trim();
+                    if (parts.length < 2 || parts[1].isBlank()) {
+                        throw new EdenException(DEADLINE_DATE_ERROR);
+                    }
+                    LocalDate by = parseDeadlineDate(parts[1].trim());
                     Task task = new Deadline(description, by);
                     this.tasks.add(task);
                     this.storage.save(this.tasks.asList());
@@ -137,6 +147,21 @@ public class Eden {
             } catch (EdenException exception) {
                 this.ui.showError(exception.getMessage());
             }
+        }
+    }
+
+    /**
+     * Parses a deadline date written in the ISO {@code yyyy-MM-dd} format.
+     *
+     * @param dateText deadline date entered by the user
+     * @return parsed date
+     * @throws EdenException if the text is not a valid ISO date
+     */
+    private LocalDate parseDeadlineDate(String dateText) throws EdenException {
+        try {
+            return LocalDate.parse(dateText, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (DateTimeParseException exception) {
+            throw new EdenException(DEADLINE_DATE_ERROR, exception);
         }
     }
 

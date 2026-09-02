@@ -23,7 +23,7 @@ public class TaskListTest {
     @Test
     public void markAndUnmark_secondTask_changesOnlyRequestedTask() {
         Task firstTask = new Todo("first task");
-        Task secondTask = new Deadline("second task", "Friday");
+        Task secondTask = new Todo("second task");
         TaskList tasks = new TaskList(List.of(firstTask, secondTask));
 
         Task markedTask = tasks.mark(2);
