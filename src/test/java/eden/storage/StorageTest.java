@@ -36,7 +36,7 @@ public class StorageTest {
     @Test
     public void saveAndLoad_allTaskTypesWithEscapedText_restoresTasks()
             throws EdenException, IOException {
-        Path dataFile = this.tempDirectory.resolve("nested folder").resolve("eden.txt");
+        Path dataFile = tempDirectory.resolve("nested folder").resolve("eden.txt");
         Storage storage = new Storage(dataFile);
 
         Todo todo = new Todo("read | book \\ notes");
@@ -75,7 +75,7 @@ public class StorageTest {
      */
     @Test
     public void load_missingFile_returnsEmptyWithoutCreatingFile() throws EdenException {
-        Path dataFile = this.tempDirectory.resolve("missing folder").resolve("eden.txt");
+        Path dataFile = tempDirectory.resolve("missing folder").resolve("eden.txt");
         Storage storage = new Storage(dataFile);
 
         List<Task> loadedTasks = storage.load();
@@ -91,7 +91,7 @@ public class StorageTest {
      */
     @Test
     public void save_existingData_replacesOldContents() throws EdenException, IOException {
-        Path dataFile = this.tempDirectory.resolve("eden.txt");
+        Path dataFile = tempDirectory.resolve("eden.txt");
         Storage storage = new Storage(dataFile);
         storage.save(List.of(
                 new Todo("obsolete task"),
@@ -144,7 +144,7 @@ public class StorageTest {
      */
     @Test
     public void save_unusableParentPath_wrapsFileSystemError() throws IOException {
-        Path blockingFile = this.tempDirectory.resolve("not-a-directory");
+        Path blockingFile = tempDirectory.resolve("not-a-directory");
         Files.writeString(blockingFile, "blocking file", StandardCharsets.UTF_8);
         Path dataFile = blockingFile.resolve("eden.txt");
         Storage storage = new Storage(dataFile);
@@ -161,14 +161,14 @@ public class StorageTest {
     /**
      * Writes malformed task data and checks the public loading error contract.
      *
-     * @param fileName unique temporary data-file name
-     * @param lines malformed lines to write
-     * @param expectedLine physical line number expected in the error
-     * @throws IOException if the temporary data file cannot be written
+     * @param fileName unique temporary data-file name.
+     * @param lines malformed lines to write.
+     * @param expectedLine physical line number expected in the error.
+     * @throws IOException if the temporary data file cannot be written.
      */
     private void assertInvalidData(String fileName, List<String> lines, int expectedLine)
             throws IOException {
-        Path dataFile = this.tempDirectory.resolve(fileName);
+        Path dataFile = tempDirectory.resolve(fileName);
         Files.write(dataFile, lines, StandardCharsets.UTF_8);
 
         EdenException exception = assertThrows(EdenException.class,
@@ -182,14 +182,14 @@ public class StorageTest {
     /**
      * Writes a malformed deadline date and checks its line-numbered loading error.
      *
-     * @param fileName unique temporary data-file name
-     * @param lines lines containing the invalid deadline date
-     * @param expectedLine physical line number expected in the error
-     * @throws IOException if the temporary data file cannot be written
+     * @param fileName unique temporary data-file name.
+     * @param lines lines containing the invalid deadline date.
+     * @param expectedLine physical line number expected in the error.
+     * @throws IOException if the temporary data file cannot be written.
      */
     private void assertInvalidDeadlineDate(
             String fileName, List<String> lines, int expectedLine) throws IOException {
-        Path dataFile = this.tempDirectory.resolve(fileName);
+        Path dataFile = tempDirectory.resolve(fileName);
         Files.write(dataFile, lines, StandardCharsets.UTF_8);
 
         EdenException exception = assertThrows(EdenException.class,

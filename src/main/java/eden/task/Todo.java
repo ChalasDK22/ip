@@ -7,7 +7,7 @@ public class Todo extends Task {
     /**
      * Creates an unmarked todo task.
      *
-     * @param description task description
+     * @param description task description.
      */
     public Todo(String description) {
         super(description);

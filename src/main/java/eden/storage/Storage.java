@@ -27,7 +27,7 @@ public class Storage {
     /**
      * Creates a storage manager for the given file.
      *
-     * @param filePath relative or absolute path to the data file
+     * @param filePath relative or absolute path to the data file.
      */
     public Storage(Path filePath) {
         this.filePath = filePath;
@@ -37,16 +37,16 @@ public class Storage {
      * Loads all tasks from the data file. A missing file represents an empty task list,
      * and blank lines in an existing file are ignored.
      *
-     * @return tasks reconstructed from the file
-     * @throws EdenException if the file cannot be read or contains invalid data
+     * @return tasks reconstructed from the file.
+     * @throws EdenException if the file cannot be read or contains invalid data.
      */
     public List<Task> load() throws EdenException {
-        if (Files.notExists(this.filePath)) {
+        if (Files.notExists(filePath)) {
             return new ArrayList<>();
         }
 
         try {
-            List<String> lines = Files.readAllLines(this.filePath, StandardCharsets.UTF_8);
+            List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
             List<Task> tasks = new ArrayList<>();
             for (int i = 0; i < lines.size(); i++) {
                 if (!lines.get(i).isBlank()) {
@@ -56,19 +56,19 @@ public class Storage {
             return tasks;
         } catch (IOException exception) {
             throw new EdenException("OOPS!!! I couldn't read the task data from "
-                    + this.filePath + ".", exception);
+                    + filePath + ".", exception);
         }
     }
 
     /**
      * Replaces the data file contents with the current task list.
      *
-     * @param tasks tasks to persist
-     * @throws EdenException if the data directory or file cannot be written
+     * @param tasks tasks to persist.
+     * @throws EdenException if the data directory or file cannot be written.
      */
     public void save(List<Task> tasks) throws EdenException {
         try {
-            Path parentDirectory = this.filePath.getParent();
+            Path parentDirectory = filePath.getParent();
             if (parentDirectory != null) {
                 Files.createDirectories(parentDirectory);
             }
@@ -77,10 +77,10 @@ public class Storage {
             for (Task task : tasks) {
                 lines.add(task.toDataString());
             }
-            Files.write(this.filePath, lines, StandardCharsets.UTF_8);
+            Files.write(filePath, lines, StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new EdenException("OOPS!!! I couldn't save the task data to "
-                    + this.filePath + ".", exception);
+                    + filePath + ".", exception);
         }
     }
 
@@ -96,23 +96,23 @@ public class Storage {
         boolean isMarked = parseStatus(fields.get(1), lineNumber);
         Task task;
         switch (fields.get(0)) {
-        case "T":
-            requireFieldCount(fields, 3, lineNumber);
-            task = new Todo(requireText(fields.get(2), lineNumber));
-            break;
-        case "D":
-            requireFieldCount(fields, 4, lineNumber);
-            task = new Deadline(requireText(fields.get(2), lineNumber),
-                    parseDeadlineDate(requireText(fields.get(3), lineNumber), lineNumber));
-            break;
-        case "E":
-            requireFieldCount(fields, 5, lineNumber);
-            task = new Event(requireText(fields.get(2), lineNumber),
-                    requireText(fields.get(3), lineNumber),
-                    requireText(fields.get(4), lineNumber));
-            break;
-        default:
-            throw invalidData(lineNumber);
+            case "T":
+                requireFieldCount(fields, 3, lineNumber);
+                task = new Todo(requireText(fields.get(2), lineNumber));
+                break;
+            case "D":
+                requireFieldCount(fields, 4, lineNumber);
+                task = new Deadline(requireText(fields.get(2), lineNumber),
+                        parseDeadlineDate(requireText(fields.get(3), lineNumber), lineNumber));
+                break;
+            case "E":
+                requireFieldCount(fields, 5, lineNumber);
+                task = new Event(requireText(fields.get(2), lineNumber),
+                        requireText(fields.get(3), lineNumber),
+                        requireText(fields.get(4), lineNumber));
+                break;
+            default:
+                throw invalidData(lineNumber);
         }
 
         if (isMarked) {
@@ -157,10 +157,10 @@ public class Storage {
     /**
      * Parses a stored deadline date in ISO format.
      *
-     * @param dateText stored deadline date
-     * @param lineNumber physical line containing the date
-     * @return parsed date
-     * @throws EdenException if the stored date is invalid
+     * @param dateText stored deadline date.
+     * @param lineNumber physical line containing the date.
+     * @return parsed date.
+     * @throws EdenException if the stored date is invalid.
      */
     private LocalDate parseDeadlineDate(String dateText, int lineNumber) throws EdenException {
         try {
@@ -207,7 +207,7 @@ public class Storage {
      * Creates a consistent error for a malformed line in the data file.
      */
     private EdenException invalidData(int lineNumber) {
-        return new EdenException("OOPS!!! The task data in " + this.filePath
+        return new EdenException("OOPS!!! The task data in " + filePath
                 + " is invalid at line " + lineNumber + ". Expected fields separated by '"
                 + FIELD_SEPARATOR + "'.");
     }
@@ -216,7 +216,7 @@ public class Storage {
      * Creates a consistent error for an invalid stored deadline date.
      */
     private EdenException invalidDeadlineDate(int lineNumber) {
-        return new EdenException("OOPS!!! The deadline date in " + this.filePath
+        return new EdenException("OOPS!!! The deadline date in " + filePath
                 + " is invalid at line " + lineNumber + ". Expected yyyy-MM-dd.");
     }
 }

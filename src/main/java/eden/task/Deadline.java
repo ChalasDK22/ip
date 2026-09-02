@@ -16,8 +16,8 @@ public class Deadline extends Task {
     /**
      * Creates an unmarked deadline task.
      *
-     * @param description task description
-     * @param by date on which the task is due
+     * @param description task description.
+     * @param by date on which the task is due.
      */
     public Deadline(String description, LocalDate by) {
         super(description);
@@ -30,7 +30,8 @@ public class Deadline extends Task {
     @Override
     public String toDataString() {
         return "D | " + (isMarked() ? "1" : "0") + " | "
-                + escapeDataField(getDescription()) + " | " + this.by;
+                + escapeDataField(getDescription()) + " | "
+                + by.format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
     /**
@@ -39,6 +40,6 @@ public class Deadline extends Task {
     @Override
     public String toString() {
         return "[D]" + super.toString() + " (by: "
-                + this.by.format(DISPLAY_DATE_FORMATTER) + ")";
+                + by.format(DISPLAY_DATE_FORMATTER) + ")";
     }
 }

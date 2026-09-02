@@ -10,9 +10,9 @@ public class Event extends Task {
     /**
      * Creates an unmarked event task.
      *
-     * @param description task description
-     * @param from text describing when the event starts
-     * @param to text describing when the event ends
+     * @param description task description.
+     * @param from text describing when the event starts.
+     * @param to text describing when the event ends.
      */
     public Event(String description, String from, String to) {
         super(description);
@@ -26,8 +26,8 @@ public class Event extends Task {
     @Override
     public String toDataString() {
         return "E | " + (isMarked() ? "1" : "0") + " | "
-                + escapeDataField(getDescription()) + " | " + escapeDataField(this.from)
-                + " | " + escapeDataField(this.to);
+                + escapeDataField(getDescription()) + " | " + escapeDataField(from)
+                + " | " + escapeDataField(to);
     }
 
     /**
