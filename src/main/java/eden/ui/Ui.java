@@ -23,16 +23,16 @@ public class Ui {
      * Creates a user interface that reads from standard input.
      */
     public Ui() {
-        this.scanner = new Scanner(System.in);
+        scanner = new Scanner(System.in);
     }
 
     /**
      * Reads the next command entered by the user.
      *
-     * @return the command exactly as entered
+     * @return the command exactly as entered.
      */
     public String readCommand() {
-        return this.scanner.nextLine();
+        return scanner.nextLine();
     }
 
     /**
@@ -59,7 +59,7 @@ public class Ui {
     /**
      * Displays all tasks using one-based numbering.
      *
-     * @param tasks tasks to display
+     * @param tasks tasks to display.
      */
     public void showTaskList(List<Task> tasks) {
         System.out.print(DIVIDER);
@@ -73,7 +73,7 @@ public class Ui {
     /**
      * Confirms that a task was marked as completed.
      *
-     * @param task task that was marked
+     * @param task task that was marked.
      */
     public void showTaskMarked(Task task) {
         System.out.print(DIVIDER);
@@ -85,7 +85,7 @@ public class Ui {
     /**
      * Confirms that a task was marked as not completed.
      *
-     * @param task task that was unmarked
+     * @param task task that was unmarked.
      */
     public void showTaskUnmarked(Task task) {
         System.out.print(DIVIDER);
@@ -97,8 +97,8 @@ public class Ui {
     /**
      * Confirms that a task was added.
      *
-     * @param task task that was added
-     * @param taskCount number of tasks after the addition
+     * @param task task that was added.
+     * @param taskCount number of tasks after the addition.
      */
     public void showTaskAdded(Task task, int taskCount) {
         System.out.print(DIVIDER);
@@ -111,8 +111,8 @@ public class Ui {
     /**
      * Confirms that a task was deleted.
      *
-     * @param task task that was deleted
-     * @param taskCount number of tasks after the deletion
+     * @param task task that was deleted.
+     * @param taskCount number of tasks after the deletion.
      */
     public void showTaskDeleted(Task task, int taskCount) {
         System.out.print(DIVIDER);
@@ -125,7 +125,7 @@ public class Ui {
     /**
      * Displays an error that Eden can explain to the user.
      *
-     * @param message explanation of the error
+     * @param message explanation of the error.
      */
     public void showError(String message) {
         System.out.print(DIVIDER);
