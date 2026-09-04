@@ -1,6 +1,5 @@
 package eden.task;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -29,17 +28,15 @@ public class TaskListTest {
 
         Task markedTask = tasks.mark(2);
 
-        assertAll(
-                () -> assertSame(secondTask, markedTask),
-                () -> assertFalse(firstTask.isMarked()),
-                () -> assertTrue(secondTask.isMarked()));
+        assertSame(secondTask, markedTask);
+        assertFalse(firstTask.isMarked());
+        assertTrue(secondTask.isMarked());
 
         Task unmarkedTask = tasks.unmark(2);
 
-        assertAll(
-                () -> assertSame(secondTask, unmarkedTask),
-                () -> assertFalse(firstTask.isMarked()),
-                () -> assertFalse(secondTask.isMarked()));
+        assertSame(secondTask, unmarkedTask);
+        assertFalse(firstTask.isMarked());
+        assertFalse(secondTask.isMarked());
     }
 
     /**
@@ -54,10 +51,9 @@ public class TaskListTest {
 
         Task deletedTask = tasks.delete(2);
 
-        assertAll(
-                () -> assertSame(secondTask, deletedTask),
-                () -> assertEquals(2, tasks.size()),
-                () -> assertIterableEquals(List.of(firstTask, thirdTask), tasks.asList()));
+        assertSame(secondTask, deletedTask);
+        assertEquals(2, tasks.size());
+        assertIterableEquals(List.of(firstTask, thirdTask), tasks.asList());
     }
 
     /**
@@ -68,14 +64,12 @@ public class TaskListTest {
         Task onlyTask = new Todo("only task");
         TaskList tasks = new TaskList(List.of(onlyTask));
 
-        assertAll(
-                () -> assertThrows(IndexOutOfBoundsException.class, () -> tasks.mark(0)),
-                () -> assertThrows(IndexOutOfBoundsException.class, () -> tasks.mark(2)),
-                () -> assertThrows(IndexOutOfBoundsException.class, () -> tasks.unmark(0)),
-                () -> assertThrows(IndexOutOfBoundsException.class, () -> tasks.delete(2)));
-        assertAll(
-                () -> assertEquals(1, tasks.size()),
-                () -> assertFalse(onlyTask.isMarked()));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.mark(0));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.mark(2));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.unmark(0));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.delete(2));
+        assertEquals(1, tasks.size());
+        assertFalse(onlyTask.isMarked());
     }
 
     /**
@@ -92,11 +86,10 @@ public class TaskListTest {
         Task secondTask = new Todo("second task");
         tasks.add(secondTask);
 
-        assertAll(
-                () -> assertEquals(2, tasks.size()),
-                () -> assertIterableEquals(List.of(firstTask, secondTask), tasks.asList()),
-                () -> assertThrows(UnsupportedOperationException.class,
-                        () -> tasks.asList().add(new Todo("leaked task"))));
+        assertEquals(2, tasks.size());
+        assertIterableEquals(List.of(firstTask, secondTask), tasks.asList());
+        assertThrows(UnsupportedOperationException.class, () ->
+                tasks.asList().add(new Todo("leaked task")));
         assertEquals(2, tasks.size());
     }
 
@@ -115,12 +108,10 @@ public class TaskListTest {
 
         List<Task> matches = tasks.find("BOOK");
 
-        assertAll(
-                () -> assertIterableEquals(
-                        List.of(firstTask, secondTask, fourthTask), matches),
-                () -> assertEquals(4, tasks.size()),
-                () -> assertThrows(UnsupportedOperationException.class,
-                        () -> matches.add(new Todo("mutation"))));
+        assertIterableEquals(List.of(firstTask, secondTask, fourthTask), matches);
+        assertEquals(4, tasks.size());
+        assertThrows(UnsupportedOperationException.class, () ->
+                matches.add(new Todo("mutation")));
     }
 
     /**
@@ -130,9 +121,8 @@ public class TaskListTest {
     public void find_missingOrBlankKeyword_returnsEmptyMatches() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        assertAll(
-                () -> assertTrue(tasks.find("magazine").isEmpty()),
-                () -> assertTrue(tasks.find("   ").isEmpty()),
-                () -> assertEquals(1, tasks.size()));
+        assertTrue(tasks.find("magazine").isEmpty());
+        assertTrue(tasks.find("   ").isEmpty());
+        assertEquals(1, tasks.size());
     }
 }
