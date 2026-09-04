@@ -26,6 +26,13 @@ public class Eden {
     private static final String DEADLINE_DATE_ERROR =
             "OOPS!!! Please enter the deadline date as yyyy-MM-dd "
             + "(e.g., 2019-12-02).";
+    private static final String EVENT_FORMAT_ERROR =
+            "OOPS!!! Please enter an event as: "
+            + "event DESCRIPTION /from START /to END.";
+    private static final String TASK_NUMBER_ERROR =
+            "OOPS!!! Please enter a valid task number.";
+    private static final String UNKNOWN_COMMAND_ERROR =
+            "OOPS!!! I'm sorry, but I don't know what that means :-(";
 
     private final Storage storage;
     private final TaskList tasks;
@@ -35,10 +42,13 @@ public class Eden {
      * Records whether Eden loaded its data successfully and can process commands.
      */
     private final boolean isReady;
+    private final String loadingError;
+
+    private boolean isExit;
 
     /**
      * Creates Eden and attempts to load tasks from the given data file.
-     * If loading fails, Eden displays the loading error and will not process commands.
+     * If loading fails, Eden reports the loading error and will not process commands.
      *
      * @param filePath path to the task data file.
      */
@@ -48,112 +58,213 @@ public class Eden {
 
         TaskList loadedTasks = new TaskList();
         boolean isLoadedSuccessfully = false;
+        String loadError = null;
 
         try {
             loadedTasks = new TaskList(storage.load());
             isLoadedSuccessfully = true;
         } catch (EdenException exception) {
-            ui.showError(exception.getMessage());
+            loadError = exception.getMessage();
         }
 
         tasks = loadedTasks;
         isReady = isLoadedSuccessfully;
+        loadingError = loadError;
     }
 
     /**
      * Greets the user and processes commands until the user exits, provided that
-     * the task data loaded successfully. Otherwise, this method returns immediately.
+     * the task data loaded successfully. Otherwise, this method reports the loading
+     * error and returns.
      */
     public void run() {
         if (!isReady) {
+            ui.showResponse(loadingError);
             return;
         }
 
         ui.showWelcome();
-
-        boolean isExit = false;
         while (!isExit) {
-            String fullCommand = ui.readCommand();
-
-            try {
-                CommandType commandType = CommandType.from(fullCommand);
-                if (commandType == CommandType.BYE) {
-                    Command command = new ExitCommand();
-                    command.execute(tasks, ui, storage);
-                    isExit = command.isExit();
-                } else if (commandType == CommandType.LIST) {
-                    Command command = new ListCommand();
-                    command.execute(tasks, ui, storage);
-                    isExit = command.isExit();
-                } else if (commandType == CommandType.FIND) {
-                    String keyword = fullCommand.substring("find".length()).trim();
-                    Command command = new FindCommand(keyword);
-                    command.execute(tasks, ui, storage);
-                    isExit = command.isExit();
-                } else if (commandType == CommandType.MARK) {
-                    int taskNumber = Integer.parseInt(fullCommand.substring(5));
-                    Task task = tasks.mark(taskNumber);
-                    storage.save(tasks.asList());
-                    ui.showTaskMarked(task);
-                } else if (commandType == CommandType.UNMARK) {
-                    int taskNumber = Integer.parseInt(fullCommand.substring(7));
-                    Task task = tasks.unmark(taskNumber);
-                    storage.save(tasks.asList());
-                    ui.showTaskUnmarked(task);
-                } else if (commandType == CommandType.TODO) {
-                    String description = fullCommand.substring("todo".length()).trim();
-                    if (description.isEmpty()) {
-                        throw new EdenException(
-                                "OOPS!!! The description of a todo cannot be empty.");
-                    }
-                    Task task = new Todo(fullCommand.substring("todo".length()).trim());
-                    tasks.add(task);
-                    storage.save(tasks.asList());
-                    ui.showTaskAdded(task, tasks.size());
-                } else if (commandType == CommandType.DEADLINE) {
-                    String details = fullCommand.substring("deadline".length()).trim();
-                    String[] parts = details.split("(?:^|\\s+)/by\\s+", 2);
-                    String description = parts[0].trim();
-                    if (description.isEmpty()) {
-                        throw new EdenException(
-                                "OOPS!!! The description of a deadline cannot be empty.");
-                    }
-                    if (parts.length < 2 || parts[1].isBlank()) {
-                        throw new EdenException(DEADLINE_DATE_ERROR);
-                    }
-                    LocalDate by = parseDeadlineDate(parts[1].trim());
-                    Task task = new Deadline(description, by);
-                    tasks.add(task);
-                    storage.save(tasks.asList());
-                    ui.showTaskAdded(task, tasks.size());
-                } else if (commandType == CommandType.EVENT) {
-                    String details = fullCommand.substring("event".length()).trim();
-                    String[] fromParts = details.split("\\s+/from\\s+", 2);
-                    String[] toParts = fromParts[1].split("\\s+/to\\s+", 2);
-                    String description = fromParts[0].trim();
-                    if (description.isEmpty()) {
-                        throw new EdenException(
-                                "OOPS!!! The description of an event cannot be empty.");
-                    }
-                    String from = toParts[0].trim();
-                    String to = toParts[1].trim();
-                    Task task = new Event(description, from, to);
-                    tasks.add(task);
-                    storage.save(tasks.asList());
-                    ui.showTaskAdded(task, tasks.size());
-                } else if (commandType == CommandType.DELETE) {
-                    int taskNumber = Integer.parseInt(fullCommand.substring(7));
-                    Task task = tasks.delete(taskNumber);
-                    storage.save(tasks.asList());
-                    ui.showTaskDeleted(task, tasks.size());
-                } else {
-                    throw new EdenException(
-                            "OOPS!!! I'm sorry, but I don't know what that means :-(");
-                }
-            } catch (EdenException exception) {
-                ui.showError(exception.getMessage());
-            }
+            ui.showResponse(getResponse(ui.readCommand()));
         }
+    }
+
+    /**
+     * Returns Eden's startup message for a graphical or other non-console interface.
+     *
+     * @return greeting, or the loading error if stored data could not be loaded.
+     */
+    public String getWelcomeMessage() {
+        return isReady ? ui.getWelcomeMessage() : loadingError;
+    }
+
+    /**
+     * Processes one user command and returns the response without console decoration.
+     *
+     * @param fullCommand full command entered by the user.
+     * @return response suitable for a console or graphical interface.
+     */
+    public String getResponse(String fullCommand) {
+        if (!isReady) {
+            return loadingError;
+        }
+
+        try {
+            return processCommand(fullCommand.trim());
+        } catch (EdenException exception) {
+            return exception.getMessage();
+        } catch (NumberFormatException | IndexOutOfBoundsException exception) {
+            return TASK_NUMBER_ERROR;
+        }
+    }
+
+    /**
+     * Returns whether the most recently processed command requested an exit.
+     *
+     * @return true after a successful bye command.
+     */
+    public boolean isExit() {
+        return isExit;
+    }
+
+    /**
+     * Routes a normalized command to the matching operation.
+     */
+    private String processCommand(String fullCommand) throws EdenException {
+        CommandType commandType = CommandType.from(fullCommand);
+        switch (commandType) {
+            case BYE:
+                return executeCommand(new ExitCommand());
+            case LIST:
+                return executeCommand(new ListCommand());
+            case FIND:
+                String keyword = fullCommand.substring("find".length()).trim();
+                return executeCommand(new FindCommand(keyword));
+            case MARK:
+                return markTask(fullCommand);
+            case UNMARK:
+                return unmarkTask(fullCommand);
+            case TODO:
+                return addTodo(fullCommand);
+            case DEADLINE:
+                return addDeadline(fullCommand);
+            case EVENT:
+                return addEvent(fullCommand);
+            case DELETE:
+                return deleteTask(fullCommand);
+            default:
+                throw new EdenException(UNKNOWN_COMMAND_ERROR);
+        }
+    }
+
+    /**
+     * Executes a command object and remembers whether it exits Eden.
+     */
+    private String executeCommand(Command command) throws EdenException {
+        String response = command.execute(tasks, ui, storage);
+        isExit = command.isExit();
+        return response;
+    }
+
+    /**
+     * Marks the selected task and persists the change.
+     */
+    private String markTask(String fullCommand) throws EdenException {
+        int taskNumber = parseTaskNumber(fullCommand, "mark");
+        Task task = tasks.mark(taskNumber);
+        storage.save(tasks.asList());
+        return ui.formatTaskMarked(task);
+    }
+
+    /**
+     * Unmarks the selected task and persists the change.
+     */
+    private String unmarkTask(String fullCommand) throws EdenException {
+        int taskNumber = parseTaskNumber(fullCommand, "unmark");
+        Task task = tasks.unmark(taskNumber);
+        storage.save(tasks.asList());
+        return ui.formatTaskUnmarked(task);
+    }
+
+    /**
+     * Creates a todo from its command text.
+     */
+    private String addTodo(String fullCommand) throws EdenException {
+        String description = fullCommand.substring("todo".length()).trim();
+        if (description.isEmpty()) {
+            throw new EdenException("OOPS!!! The description of a todo cannot be empty.");
+        }
+        return addTask(new Todo(description));
+    }
+
+    /**
+     * Creates a deadline from its description and ISO date.
+     */
+    private String addDeadline(String fullCommand) throws EdenException {
+        String details = fullCommand.substring("deadline".length()).trim();
+        String[] parts = details.split("(?:^|\\s+)/by\\s+", 2);
+        String description = parts[0].trim();
+        if (description.isEmpty()) {
+            throw new EdenException("OOPS!!! The description of a deadline cannot be empty.");
+        }
+        if (parts.length < 2 || parts[1].isBlank()) {
+            throw new EdenException(DEADLINE_DATE_ERROR);
+        }
+
+        LocalDate dueDate = parseDeadlineDate(parts[1].trim());
+        return addTask(new Deadline(description, dueDate));
+    }
+
+    /**
+     * Creates an event from its description, start, and end text.
+     */
+    private String addEvent(String fullCommand) throws EdenException {
+        String details = fullCommand.substring("event".length()).trim();
+        String[] fromParts = details.split("\\s+/from\\s+", 2);
+        if (fromParts.length < 2) {
+            throw new EdenException(EVENT_FORMAT_ERROR);
+        }
+
+        String[] toParts = fromParts[1].split("\\s+/to\\s+", 2);
+        String description = fromParts[0].trim();
+        if (description.isEmpty()) {
+            throw new EdenException("OOPS!!! The description of an event cannot be empty.");
+        }
+        if (toParts.length < 2 || toParts[0].isBlank() || toParts[1].isBlank()) {
+            throw new EdenException(EVENT_FORMAT_ERROR);
+        }
+
+        return addTask(new Event(description, toParts[0].trim(), toParts[1].trim()));
+    }
+
+    /**
+     * Adds and persists one newly parsed task.
+     */
+    private String addTask(Task task) throws EdenException {
+        tasks.add(task);
+        storage.save(tasks.asList());
+        return ui.formatTaskAdded(task, tasks.size());
+    }
+
+    /**
+     * Deletes the selected task and persists the change.
+     */
+    private String deleteTask(String fullCommand) throws EdenException {
+        int taskNumber = parseTaskNumber(fullCommand, "delete");
+        Task task = tasks.delete(taskNumber);
+        storage.save(tasks.asList());
+        return ui.formatTaskDeleted(task, tasks.size());
+    }
+
+    /**
+     * Parses the one-based task number after a command word.
+     */
+    private int parseTaskNumber(String fullCommand, String commandWord) throws EdenException {
+        String numberText = fullCommand.substring(commandWord.length()).trim();
+        if (numberText.isEmpty()) {
+            throw new EdenException(TASK_NUMBER_ERROR);
+        }
+        return Integer.parseInt(numberText);
     }
 
     /**

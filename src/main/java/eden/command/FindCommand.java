@@ -24,10 +24,10 @@ public class FindCommand extends Command {
      * {@inheritDoc}
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws EdenException {
+    public String execute(TaskList tasks, Ui ui, Storage storage) throws EdenException {
         if (keyword.isEmpty()) {
             throw new EdenException("OOPS!!! The keyword for find cannot be empty.");
         }
-        ui.showMatchingTasks(tasks.find(keyword));
+        return ui.formatMatchingTasks(tasks.find(keyword));
     }
 }
