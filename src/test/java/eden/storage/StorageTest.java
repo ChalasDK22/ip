@@ -1,6 +1,5 @@
 package eden.storage;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -53,21 +52,18 @@ public class StorageTest {
         storage.save(List.of(todo, deadline, event));
         List<Task> loadedTasks = storage.load();
 
-        assertAll(
-                () -> assertEquals(expectedLines,
-                        Files.readAllLines(dataFile, StandardCharsets.UTF_8)),
-                () -> assertEquals(3, loadedTasks.size()),
-                () -> assertInstanceOf(Todo.class, loadedTasks.get(0)),
-                () -> assertInstanceOf(Deadline.class, loadedTasks.get(1)),
-                () -> assertInstanceOf(Event.class, loadedTasks.get(2)),
-                () -> assertEquals(expectedLines,
-                        loadedTasks.stream().map(Task::toDataString).toList()),
-                () -> assertEquals(List.of(
-                        "read | book \\ notes", "return book", "project \\ meeting"),
-                        loadedTasks.stream().map(Task::getDescription).toList()),
-                () -> assertTrue(loadedTasks.get(0).isMarked()),
-                () -> assertFalse(loadedTasks.get(1).isMarked()),
-                () -> assertTrue(loadedTasks.get(2).isMarked()));
+        assertEquals(expectedLines, Files.readAllLines(dataFile, StandardCharsets.UTF_8));
+        assertEquals(3, loadedTasks.size());
+        assertInstanceOf(Todo.class, loadedTasks.get(0));
+        assertInstanceOf(Deadline.class, loadedTasks.get(1));
+        assertInstanceOf(Event.class, loadedTasks.get(2));
+        assertEquals(expectedLines, loadedTasks.stream().map(Task::toDataString).toList());
+        assertEquals(List.of(
+                "read | book \\ notes", "return book", "project \\ meeting"),
+                loadedTasks.stream().map(Task::getDescription).toList());
+        assertTrue(loadedTasks.get(0).isMarked());
+        assertFalse(loadedTasks.get(1).isMarked());
+        assertTrue(loadedTasks.get(2).isMarked());
     }
 
     /**
@@ -80,10 +76,9 @@ public class StorageTest {
 
         List<Task> loadedTasks = storage.load();
 
-        assertAll(
-                () -> assertTrue(loadedTasks.isEmpty()),
-                () -> assertFalse(Files.exists(dataFile)),
-                () -> assertFalse(Files.exists(dataFile.getParent())));
+        assertTrue(loadedTasks.isEmpty());
+        assertFalse(Files.exists(dataFile));
+        assertFalse(Files.exists(dataFile.getParent()));
     }
 
     /**
@@ -103,40 +98,31 @@ public class StorageTest {
         storage.save(List.of(replacement));
 
         List<Task> loadedTasks = storage.load();
-        assertAll(
-                () -> assertEquals(List.of("D | 1 | submit report | 2025-12-05"),
-                        Files.readAllLines(dataFile, StandardCharsets.UTF_8)),
-                () -> assertEquals(1, loadedTasks.size()),
-                () -> assertInstanceOf(Deadline.class, loadedTasks.get(0)),
-                () -> assertEquals("D | 1 | submit report | 2025-12-05",
-                        loadedTasks.get(0).toDataString()),
-                () -> assertTrue(loadedTasks.get(0).isMarked()));
+        assertEquals(List.of("D | 1 | submit report | 2025-12-05"),
+                Files.readAllLines(dataFile, StandardCharsets.UTF_8));
+        assertEquals(1, loadedTasks.size());
+        assertInstanceOf(Deadline.class, loadedTasks.get(0));
+        assertEquals("D | 1 | submit report | 2025-12-05", loadedTasks.get(0).toDataString());
+        assertTrue(loadedTasks.get(0).isMarked());
     }
 
     /**
      * Verifies that malformed records report their physical source line.
      */
     @Test
-    public void load_malformedData_throwsLineNumberedError() {
-        assertAll(
-                () -> assertInvalidData("unknown-type.txt",
-                        List.of("X | 0 | task"), 1),
-                () -> assertInvalidData("invalid-status.txt",
-                        List.of("T | 0 | valid", "", "T | 2 | invalid"), 3),
-                () -> assertInvalidData("missing-field.txt",
-                        List.of("D | 0 | return book"), 1),
-                () -> assertInvalidData("extra-field.txt",
-                        List.of("T | 0 | task | extra"), 1),
-                () -> assertInvalidData("blank-description.txt",
-                        List.of("T | 0 |   "), 1),
-                () -> assertInvalidDeadlineDate("non-iso-deadline-date.txt",
-                        List.of("D | 0 | return book | 2025-2-3"), 1),
-                () -> assertInvalidDeadlineDate("impossible-deadline-date.txt",
-                        List.of("T | 0 | valid", "D | 0 | impossible | 2025-02-29"), 2),
-                () -> assertInvalidData("invalid-escape.txt",
-                        List.of("T | 0 | bad\\q"), 1),
-                () -> assertInvalidData("dangling-escape.txt",
-                        List.of("T | 0 | bad\\"), 1));
+    public void load_malformedData_throwsLineNumberedError() throws IOException {
+        assertInvalidData("unknown-type.txt", List.of("X | 0 | task"), 1);
+        assertInvalidData("invalid-status.txt",
+                List.of("T | 0 | valid", "", "T | 2 | invalid"), 3);
+        assertInvalidData("missing-field.txt", List.of("D | 0 | return book"), 1);
+        assertInvalidData("extra-field.txt", List.of("T | 0 | task | extra"), 1);
+        assertInvalidData("blank-description.txt", List.of("T | 0 |   "), 1);
+        assertInvalidDeadlineDate("non-iso-deadline-date.txt",
+                List.of("D | 0 | return book | 2025-2-3"), 1);
+        assertInvalidDeadlineDate("impossible-deadline-date.txt",
+                List.of("T | 0 | valid", "D | 0 | impossible | 2025-02-29"), 2);
+        assertInvalidData("invalid-escape.txt", List.of("T | 0 | bad\\q"), 1);
+        assertInvalidData("dangling-escape.txt", List.of("T | 0 | bad\\"), 1);
     }
 
     /**
@@ -149,13 +135,12 @@ public class StorageTest {
         Path dataFile = blockingFile.resolve("eden.txt");
         Storage storage = new Storage(dataFile);
 
-        EdenException exception = assertThrows(EdenException.class,
-                () -> storage.save(List.of(new Todo("read book"))));
+        EdenException exception = assertThrows(EdenException.class, () ->
+                storage.save(List.of(new Todo("read book"))));
 
-        assertAll(
-                () -> assertEquals("OOPS!!! I couldn't save the task data to "
-                        + dataFile + ".", exception.getMessage()),
-                () -> assertInstanceOf(IOException.class, exception.getCause()));
+        assertEquals("OOPS!!! I couldn't save the task data to "
+                + dataFile + ".", exception.getMessage());
+        assertInstanceOf(IOException.class, exception.getCause());
     }
 
     /**
@@ -171,8 +156,8 @@ public class StorageTest {
         Path dataFile = tempDirectory.resolve(fileName);
         Files.write(dataFile, lines, StandardCharsets.UTF_8);
 
-        EdenException exception = assertThrows(EdenException.class,
-                () -> new Storage(dataFile).load());
+        EdenException exception = assertThrows(EdenException.class, () ->
+                new Storage(dataFile).load());
 
         assertEquals("OOPS!!! The task data in " + dataFile
                 + " is invalid at line " + expectedLine
@@ -192,8 +177,8 @@ public class StorageTest {
         Path dataFile = tempDirectory.resolve(fileName);
         Files.write(dataFile, lines, StandardCharsets.UTF_8);
 
-        EdenException exception = assertThrows(EdenException.class,
-                () -> new Storage(dataFile).load());
+        EdenException exception = assertThrows(EdenException.class, () ->
+                new Storage(dataFile).load());
 
         assertEquals("OOPS!!! The deadline date in " + dataFile
                 + " is invalid at line " + expectedLine
