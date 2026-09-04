@@ -51,7 +51,7 @@ public class Ui {
      * @return greeting without console decoration.
      */
     public String getWelcomeMessage() {
-        return "Hello! I'm Eden.\nWhat can I do for you?";
+        return formatLines("Hello! I'm Eden.", "What can I do for you?");
     }
 
     /**
@@ -105,7 +105,9 @@ public class Ui {
      * @return formatted confirmation without console decoration.
      */
     public String formatTaskMarked(Task task) {
-        return "Nice! I've marked this task as done:\n  " + task;
+        return formatLines(
+                "Nice! I've marked this task as done:",
+                "  " + task);
     }
 
     /**
@@ -115,7 +117,9 @@ public class Ui {
      * @return formatted confirmation without console decoration.
      */
     public String formatTaskUnmarked(Task task) {
-        return "OK, I've marked this task as not done yet:\n  " + task;
+        return formatLines(
+                "OK, I've marked this task as not done yet:",
+                "  " + task);
     }
 
     /**
@@ -126,8 +130,10 @@ public class Ui {
      * @return formatted confirmation without console decoration.
      */
     public String formatTaskAdded(Task task, int taskCount) {
-        return "Got it. I've added this task:\n  " + task
-                + "\nNow you have " + taskCount + " in the list.";
+        return formatLines(
+                "Got it. I've added this task:",
+                "  " + task,
+                "Now you have " + taskCount + " in the list.");
     }
 
     /**
@@ -138,8 +144,20 @@ public class Ui {
      * @return formatted confirmation without console decoration.
      */
     public String formatTaskDeleted(Task task, int taskCount) {
-        return "Noted. I've removed this task:\n  " + task
-                + "\nNow you have " + taskCount + " in the list.";
+        return formatLines(
+                "Noted. I've removed this task:",
+                "  " + task,
+                "Now you have " + taskCount + " in the list.");
+    }
+
+    /**
+     * Joins any number of response lines with platform-independent newlines.
+     *
+     * @param lines response lines in display order.
+     * @return lines joined by newline characters.
+     */
+    private static String formatLines(String... lines) {
+        return String.join("\n", lines);
     }
 
     /**
