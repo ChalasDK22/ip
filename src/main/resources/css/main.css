@@ -1,0 +1,57 @@
+.root {
+    -fx-background-color: #f4f6f8;
+    -fx-font-family: "System";
+    -fx-font-size: 14px;
+}
+
+.scroll-pane,
+.scroll-pane > .viewport,
+.dialog-container {
+    -fx-background-color: #f4f6f8;
+}
+
+.dialog-label {
+    -fx-background-radius: 12px;
+    -fx-padding: 10px 12px;
+}
+
+.user-dialog-box .dialog-label {
+    -fx-background-color: #dcecff;
+    -fx-text-fill: #17395f;
+}
+
+.eden-dialog-box .dialog-label {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #263238;
+}
+
+.avatar-label {
+    -fx-background-radius: 24px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.user-dialog-box .avatar-label {
+    -fx-background-color: #2563a7;
+}
+
+.eden-dialog-box .avatar-label {
+    -fx-background-color: #2e7d5b;
+}
+
+.text-field {
+    -fx-background-radius: 6px;
+    -fx-border-color: #b8c2cc;
+    -fx-border-radius: 6px;
+}
+
+.button {
+    -fx-background-color: #2e7d5b;
+    -fx-background-radius: 6px;
+    -fx-text-fill: #ffffff;
+}
+
+.button:hover {
+    -fx-background-color: #256749;
+}

@@ -39,111 +39,117 @@ public class Ui {
      * Displays Eden's banner and greeting.
      */
     public void showWelcome() {
-        String greeting = "Hello! I'm Eden.\n"
-                + "What can I do for you?\n";
         System.out.print(DIVIDER);
         System.out.print(BANNER);
-        System.out.print(greeting);
+        System.out.println(getWelcomeMessage());
         System.out.print(DIVIDER);
     }
 
     /**
-     * Displays Eden's farewell message.
-     */
-    public void showGoodbye() {
-        System.out.print(DIVIDER);
-        System.out.print("Bye. Hope to see you again soon!\n");
-        System.out.print(DIVIDER);
-    }
-
-    /**
-     * Displays all tasks using one-based numbering.
+     * Returns the greeting shown when Eden starts.
      *
-     * @param tasks tasks to display.
+     * @return greeting without console decoration.
      */
-    public void showTaskList(List<Task> tasks) {
+    public String getWelcomeMessage() {
+        return "Hello! I'm Eden.\nWhat can I do for you?";
+    }
+
+    /**
+     * Displays one response with console divider lines.
+     *
+     * @param response response body to display.
+     */
+    public void showResponse(String response) {
         System.out.print(DIVIDER);
-        System.out.print("Here are the tasks in your list:\n");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.get(i));
+        System.out.print(response);
+        if (!response.endsWith("\n")) {
+            System.out.println();
         }
         System.out.print(DIVIDER);
     }
 
     /**
-     * Displays tasks matching a find command using one-based result numbering.
+     * Formats Eden's farewell message.
      *
-     * @param matchingTasks matching tasks to display.
+     * @return farewell message without console decoration.
      */
-    public void showMatchingTasks(List<Task> matchingTasks) {
-        System.out.print(DIVIDER);
-        System.out.print("Here are the matching tasks in your list:\n");
-        for (int i = 0; i < matchingTasks.size(); i++) {
-            System.out.println((i + 1) + "." + matchingTasks.get(i));
-        }
-        System.out.print(DIVIDER);
+    public String formatGoodbye() {
+        return "Bye. Hope to see you again soon!";
     }
 
     /**
-     * Confirms that a task was marked as completed.
+     * Formats all tasks using one-based numbering.
+     *
+     * @param tasks tasks to format.
+     * @return formatted task list without console decoration.
+     */
+    public String formatTaskList(List<Task> tasks) {
+        return formatNumberedTasks("Here are the tasks in your list:", tasks);
+    }
+
+    /**
+     * Formats tasks matching a find command using one-based result numbering.
+     *
+     * @param matchingTasks matching tasks to format.
+     * @return formatted matching tasks without console decoration.
+     */
+    public String formatMatchingTasks(List<Task> matchingTasks) {
+        return formatNumberedTasks(
+                "Here are the matching tasks in your list:", matchingTasks);
+    }
+
+    /**
+     * Formats confirmation that a task was marked as completed.
      *
      * @param task task that was marked.
+     * @return formatted confirmation without console decoration.
      */
-    public void showTaskMarked(Task task) {
-        System.out.print(DIVIDER);
-        System.out.print("Nice! I've marked this task as done:\n");
-        System.out.print("  " + task + "\n");
-        System.out.print(DIVIDER);
+    public String formatTaskMarked(Task task) {
+        return "Nice! I've marked this task as done:\n  " + task;
     }
 
     /**
-     * Confirms that a task was marked as not completed.
+     * Formats confirmation that a task was marked as not completed.
      *
      * @param task task that was unmarked.
+     * @return formatted confirmation without console decoration.
      */
-    public void showTaskUnmarked(Task task) {
-        System.out.print(DIVIDER);
-        System.out.print("OK, I've marked this task as not done yet:\n");
-        System.out.print("  " + task + "\n");
-        System.out.print(DIVIDER);
+    public String formatTaskUnmarked(Task task) {
+        return "OK, I've marked this task as not done yet:\n  " + task;
     }
 
     /**
-     * Confirms that a task was added.
+     * Formats confirmation that a task was added.
      *
      * @param task task that was added.
      * @param taskCount number of tasks after the addition.
+     * @return formatted confirmation without console decoration.
      */
-    public void showTaskAdded(Task task, int taskCount) {
-        System.out.print(DIVIDER);
-        System.out.print("Got it. I've added this task:\n");
-        System.out.print("  " + task + "\n");
-        System.out.print("Now you have " + taskCount + " in the list.\n");
-        System.out.print(DIVIDER);
+    public String formatTaskAdded(Task task, int taskCount) {
+        return "Got it. I've added this task:\n  " + task
+                + "\nNow you have " + taskCount + " in the list.";
     }
 
     /**
-     * Confirms that a task was deleted.
+     * Formats confirmation that a task was deleted.
      *
      * @param task task that was deleted.
      * @param taskCount number of tasks after the deletion.
+     * @return formatted confirmation without console decoration.
      */
-    public void showTaskDeleted(Task task, int taskCount) {
-        System.out.print(DIVIDER);
-        System.out.print("Noted. I've removed this task:\n");
-        System.out.print("  " + task + "\n");
-        System.out.print("Now you have " + taskCount + " in the list.\n");
-        System.out.print(DIVIDER);
+    public String formatTaskDeleted(Task task, int taskCount) {
+        return "Noted. I've removed this task:\n  " + task
+                + "\nNow you have " + taskCount + " in the list.";
     }
 
     /**
-     * Displays an error that Eden can explain to the user.
-     *
-     * @param message explanation of the error.
+     * Formats a heading followed by one-based task rows.
      */
-    public void showError(String message) {
-        System.out.print(DIVIDER);
-        System.out.println(message);
-        System.out.print(DIVIDER);
+    private String formatNumberedTasks(String heading, List<Task> tasks) {
+        StringBuilder response = new StringBuilder(heading);
+        for (int i = 0; i < tasks.size(); i++) {
+            response.append("\n").append(i + 1).append(".").append(tasks.get(i));
+        }
+        return response.toString();
     }
 }
