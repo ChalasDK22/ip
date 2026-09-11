@@ -117,6 +117,8 @@ public class Storage {
         if (isMarked) {
             task.mark();
         }
+        assert task.isMarked() == isMarked
+                : "A loaded task must retain its stored completion status";
         return task;
     }
 

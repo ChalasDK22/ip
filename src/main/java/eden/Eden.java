@@ -70,6 +70,8 @@ public class Eden {
         tasks = loadedTasks;
         isReady = isLoadedSuccessfully;
         loadingError = loadError;
+        assert (isReady && loadingError == null) || (!isReady && loadingError != null)
+                : "Eden must start either ready or with a loading error";
     }
 
     /**
@@ -162,6 +164,7 @@ public class Eden {
      */
     private String executeCommand(Command command) throws EdenException {
         String response = command.execute(tasks, ui, storage);
+        assert response != null : "Every command must return a displayable response";
         isExit = command.isExit();
         return response;
     }
@@ -172,6 +175,7 @@ public class Eden {
     private String markTask(String fullCommand) throws EdenException {
         int taskNumber = parseTaskNumber(fullCommand, "mark");
         Task task = tasks.mark(taskNumber);
+        assert task.isMarked() : "A task returned by mark must be marked";
         storage.save(tasks.asList());
         return ui.formatTaskMarked(task);
     }
@@ -182,6 +186,7 @@ public class Eden {
     private String unmarkTask(String fullCommand) throws EdenException {
         int taskNumber = parseTaskNumber(fullCommand, "unmark");
         Task task = tasks.unmark(taskNumber);
+        assert !task.isMarked() : "A task returned by unmark must be unmarked";
         storage.save(tasks.asList());
         return ui.formatTaskUnmarked(task);
     }
@@ -241,7 +246,10 @@ public class Eden {
      * Adds and persists one newly parsed task.
      */
     private String addTask(Task task) throws EdenException {
+        int previousTaskCount = tasks.size();
         tasks.add(task);
+        assert tasks.size() == previousTaskCount + 1
+                : "Adding one task must increase the task count by one";
         storage.save(tasks.asList());
         return ui.formatTaskAdded(task, tasks.size());
     }
@@ -251,7 +259,10 @@ public class Eden {
      */
     private String deleteTask(String fullCommand) throws EdenException {
         int taskNumber = parseTaskNumber(fullCommand, "delete");
+        int previousTaskCount = tasks.size();
         Task task = tasks.delete(taskNumber);
+        assert tasks.size() == previousTaskCount - 1
+                : "Deleting one task must decrease the task count by one";
         storage.save(tasks.asList());
         return ui.formatTaskDeleted(task, tasks.size());
     }
