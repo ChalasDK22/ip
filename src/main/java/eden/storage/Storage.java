@@ -73,10 +73,9 @@ public class Storage {
                 Files.createDirectories(parentDirectory);
             }
 
-            List<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toDataString());
-            }
+            List<String> lines = tasks.stream()
+                    .map(Task::toDataString)
+                    .toList();
             Files.write(filePath, lines, StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new EdenException("OOPS!!! I couldn't save the task data to "
