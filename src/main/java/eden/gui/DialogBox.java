@@ -42,6 +42,8 @@ public class DialogBox extends HBox {
             throw new IllegalStateException("Unable to load the dialog box layout.", exception);
         }
 
+        assert dialog != null && avatar != null
+                : "The dialog box layout must inject both labels";
         dialog.setText(text);
         avatar.setText(avatarText);
     }
