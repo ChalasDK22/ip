@@ -138,10 +138,10 @@ public class Eden {
             case BYE:
                 return executeCommand(new ExitCommand());
             case LIST:
-                return executeCommand(new ListCommand());
+                return executeCommand(new ListCommand(tasks));
             case FIND:
                 String keyword = fullCommand.substring("find".length()).trim();
-                return executeCommand(new FindCommand(keyword));
+                return executeCommand(new FindCommand(keyword, tasks));
             case MARK:
                 return markTask(fullCommand);
             case UNMARK:
@@ -163,7 +163,7 @@ public class Eden {
      * Executes a command object and remembers whether it exits Eden.
      */
     private String executeCommand(Command command) throws EdenException {
-        String response = command.execute(tasks, ui, storage);
+        String response = command.execute(ui);
         assert response != null : "Every command must return a displayable response";
         isExit = command.isExit();
         return response;

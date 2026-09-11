@@ -1,8 +1,6 @@
 package eden.command;
 
 import eden.exception.EdenException;
-import eden.storage.Storage;
-import eden.task.TaskList;
 import eden.ui.Ui;
 
 /**
@@ -16,15 +14,13 @@ public abstract class Command {
     }
 
     /**
-     * Executes this command using Eden's application collaborators.
+     * Executes this command and formats its result for display.
      *
-     * @param tasks task list on which the command operates.
      * @param ui user interface used to display the result.
-     * @param storage storage used to persist task changes.
      * @return response to show to the user.
      * @throws EdenException if the command cannot be completed.
      */
-    public abstract String execute(TaskList tasks, Ui ui, Storage storage) throws EdenException;
+    public abstract String execute(Ui ui) throws EdenException;
 
     /**
      * Returns whether Eden should stop after executing this command.

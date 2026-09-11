@@ -1,7 +1,5 @@
 package eden.command;
 
-import eden.storage.Storage;
-import eden.task.TaskList;
 import eden.ui.Ui;
 
 /**
@@ -18,7 +16,7 @@ public class ExitCommand extends Command {
      * {@inheritDoc}
      */
     @Override
-    public String execute(TaskList tasks, Ui ui, Storage storage) {
+    public String execute(Ui ui) {
         return ui.formatGoodbye();
     }
 
