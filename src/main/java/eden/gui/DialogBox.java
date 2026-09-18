@@ -67,10 +67,13 @@ public class DialogBox extends HBox {
      * @param text response text.
      * @return dialog representing Eden's response.
      */
-    public static DialogBox getEdenDialog(String text) {
+    public static DialogBox getEdenDialog(String text, boolean isError) {
         DialogBox dialogBox = new DialogBox(text, "Eden");
         dialogBox.flip();
         dialogBox.getStyleClass().add("eden-dialog-box");
+        if (isError) {
+            dialogBox.getStyleClass().add("error-dialog-box");
+        }
         return dialogBox;
     }
 

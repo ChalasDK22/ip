@@ -65,6 +65,17 @@
     -fx-background-color: #2d7a70;
 }
 
+.error-dialog-box .dialog-label {
+    -fx-background-color: #fff1f0;
+    -fx-border-color: #d35d54;
+    -fx-border-radius: 14px;
+    -fx-text-fill: #8a2923;
+}
+
+.error-dialog-box .avatar-label {
+    -fx-background-color: #b8443c;
+}
+
 .command-input {
     -fx-background-color: #ffffff;
     -fx-background-radius: 10px;
