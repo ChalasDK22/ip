@@ -44,6 +44,7 @@ public class DialogBox extends HBox {
 
         assert dialog != null && avatar != null
                 : "The dialog box layout must inject both labels";
+        dialog.maxWidthProperty().bind(widthProperty().multiply(0.72));
         dialog.setText(text);
         avatar.setText(avatarText);
     }
