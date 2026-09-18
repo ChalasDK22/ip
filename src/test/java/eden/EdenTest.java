@@ -66,12 +66,22 @@ public class EdenTest {
         assertTrue(eden.isLastResponseError());
         assertEquals("OOPS!!! The description of a todo cannot be empty.",
                 eden.getResponse("todo"));
+        assertEquals("OOPS!!! The keyword for find cannot be empty.",
+                eden.getResponse("find"));
+        assertEquals("OOPS!!! The description of a deadline cannot be empty.",
+                eden.getResponse("deadline /by 2026-09-30"));
+        assertEquals("OOPS!!! Please enter the deadline date as yyyy-MM-dd "
+                + "(e.g., 2019-12-02).", eden.getResponse("deadline task"));
         assertEquals("OOPS!!! Please enter the deadline date as yyyy-MM-dd "
                 + "(e.g., 2019-12-02).", eden.getResponse("deadline task /by tomorrow"));
         assertEquals("OOPS!!! Please enter an event as: "
                 + "event DESCRIPTION /from START /to END.",
+                eden.getResponse("event /from 2pm /to 3pm"));
+        assertEquals("OOPS!!! Please enter an event as: "
+                + "event DESCRIPTION /from START /to END.",
                 eden.getResponse("event meeting /from 2pm"));
         assertEquals("OOPS!!! Please enter a valid task number.", eden.getResponse("mark nope"));
+        assertEquals("OOPS!!! Please enter a valid task number.", eden.getResponse("unmark 0"));
         assertEquals("OOPS!!! Please enter a valid task number.", eden.getResponse("delete 1"));
         assertEquals("OOPS!!! The list command does not accept extra details.",
                 eden.getResponse("list later"));
