@@ -63,6 +63,7 @@ public class EdenTest {
 
         assertEquals("OOPS!!! I'm sorry, but I don't know what that means :-(",
                 eden.getResponse("something else"));
+        assertTrue(eden.isLastResponseError());
         assertEquals("OOPS!!! The description of a todo cannot be empty.",
                 eden.getResponse("todo"));
         assertEquals("OOPS!!! Please enter the deadline date as yyyy-MM-dd "
@@ -72,6 +73,56 @@ public class EdenTest {
                 eden.getResponse("event meeting /from 2pm"));
         assertEquals("OOPS!!! Please enter a valid task number.", eden.getResponse("mark nope"));
         assertEquals("OOPS!!! Please enter a valid task number.", eden.getResponse("delete 1"));
+        assertEquals("OOPS!!! The list command does not accept extra details.",
+                eden.getResponse("list later"));
+        assertEquals("OOPS!!! The bye command does not accept extra details.",
+                eden.getResponse("bye now"));
+        assertFalse(eden.isExit());
+
+        eden.getResponse("list");
+        assertFalse(eden.isLastResponseError());
+    }
+
+    /**
+     * Verifies that command separators are accepted regardless of letter case.
+     */
+    @Test
+    public void getResponse_uppercaseSeparators_addsDatedTasks() {
+        Eden eden = new Eden(tempDirectory.resolve("eden.txt"));
+
+        eden.getResponse("DEADLINE submit report /BY 2026-09-30");
+        eden.getResponse("EVENT demo /FROM 2pm /TO 3pm");
+
+        assertEquals("Here are the tasks in your list:\n"
+                + "1.[D][ ] submit report (by: Sep 30 2026)\n"
+                + "2.[E][ ] demo (from: 2pm to: 3pm)", eden.getResponse("list"));
+    }
+
+    /**
+     * Verifies that failed saves do not leave unpersisted in-memory changes.
+     */
+    @Test
+    public void getResponse_saveFailures_rollBackTaskChanges() throws IOException {
+        Eden addEden = createEdenWhoseStorageBecomesUnwritable("add-failure");
+        Path addDataFile = tempDirectory.resolve("add-failure").resolve("eden.txt");
+
+        assertEquals(saveError(addDataFile), addEden.getResponse("todo new task"));
+        assertEquals("Here are the tasks in your list:\n1.[T][ ] existing task",
+                addEden.getResponse("list"));
+
+        Eden markEden = createEdenWhoseStorageBecomesUnwritable("mark-failure");
+        Path markDataFile = tempDirectory.resolve("mark-failure").resolve("eden.txt");
+
+        assertEquals(saveError(markDataFile), markEden.getResponse("mark 1"));
+        assertEquals("Here are the tasks in your list:\n1.[T][ ] existing task",
+                markEden.getResponse("list"));
+
+        Eden deleteEden = createEdenWhoseStorageBecomesUnwritable("delete-failure");
+        Path deleteDataFile = tempDirectory.resolve("delete-failure").resolve("eden.txt");
+
+        assertEquals(saveError(deleteDataFile), deleteEden.getResponse("delete 1"));
+        assertEquals("Here are the tasks in your list:\n1.[T][ ] existing task",
+                deleteEden.getResponse("list"));
     }
 
     /**
@@ -115,5 +166,29 @@ public class EdenTest {
 
         assertEquals(expectedError, eden.getWelcomeMessage());
         assertEquals(expectedError, eden.getResponse("list"));
+    }
+
+    /**
+     * Creates Eden with one task, then replaces its data directory with a file so saves fail.
+     */
+    private Eden createEdenWhoseStorageBecomesUnwritable(String directoryName)
+            throws IOException {
+        Path dataDirectory = tempDirectory.resolve(directoryName);
+        Files.createDirectories(dataDirectory);
+        Path dataFile = dataDirectory.resolve("eden.txt");
+        Files.writeString(dataFile, "T | 0 | existing task", StandardCharsets.UTF_8);
+        Eden eden = new Eden(dataFile);
+
+        Files.delete(dataFile);
+        Files.delete(dataDirectory);
+        Files.writeString(dataDirectory, "blocks directory creation", StandardCharsets.UTF_8);
+        return eden;
+    }
+
+    /**
+     * Returns the save error expected for the given data file.
+     */
+    private String saveError(Path dataFile) {
+        return "OOPS!!! I couldn't save the task data to " + dataFile + ".";
     }
 }

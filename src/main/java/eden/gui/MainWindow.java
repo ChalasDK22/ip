@@ -46,7 +46,8 @@ public class MainWindow extends AnchorPane {
     public void setEden(Eden eden) {
         this.eden = eden;
         dialogContainer.getChildren().add(
-                DialogBox.getEdenDialog(eden.getWelcomeMessage()));
+                DialogBox.getEdenDialog(
+                        eden.getWelcomeMessage(), eden.isLastResponseError()));
     }
 
     /**
@@ -63,7 +64,7 @@ public class MainWindow extends AnchorPane {
         String response = eden.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input),
-                DialogBox.getEdenDialog(response));
+                DialogBox.getEdenDialog(response, eden.isLastResponseError()));
         userInput.clear();
 
         if (eden.isExit()) {

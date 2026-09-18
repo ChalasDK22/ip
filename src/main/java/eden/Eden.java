@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import eden.command.Command;
 import eden.command.ExitCommand;
@@ -45,6 +47,7 @@ public class Eden {
     private final String loadingError;
 
     private boolean isExit;
+    private boolean isLastResponseError;
 
     /**
      * Creates Eden and attempts to load tasks from the given data file.
@@ -70,6 +73,7 @@ public class Eden {
         tasks = loadedTasks;
         isReady = isLoadedSuccessfully;
         loadingError = loadError;
+        isLastResponseError = !isReady;
         assert (isReady && loadingError == null) || (!isReady && loadingError != null)
                 : "Eden must start either ready or with a loading error";
     }
@@ -108,16 +112,28 @@ public class Eden {
      */
     public String getResponse(String fullCommand) {
         if (!isReady) {
+            isLastResponseError = true;
             return loadingError;
         }
 
         try {
-            return processCommand(fullCommand.trim());
+            String response = processCommand(fullCommand.trim());
+            isLastResponseError = false;
+            return response;
         } catch (EdenException exception) {
-            return exception.getMessage();
+            return recordError(exception.getMessage());
         } catch (NumberFormatException | IndexOutOfBoundsException exception) {
-            return TASK_NUMBER_ERROR;
+            return recordError(TASK_NUMBER_ERROR);
         }
+    }
+
+    /**
+     * Returns whether the last response reports an error.
+     *
+     * @return true if the most recent response was an error message.
+     */
+    public boolean isLastResponseError() {
+        return isLastResponseError;
     }
 
     /**
@@ -136,8 +152,10 @@ public class Eden {
         CommandType commandType = CommandType.from(fullCommand);
         switch (commandType) {
             case BYE:
+                requireNoArguments(fullCommand, "bye");
                 return executeCommand(new ExitCommand());
             case LIST:
+                requireNoArguments(fullCommand, "list");
                 return executeCommand(new ListCommand(tasks));
             case FIND:
                 String keyword = fullCommand.substring("find".length()).trim();
@@ -174,9 +192,10 @@ public class Eden {
      */
     private String markTask(String fullCommand) throws EdenException {
         int taskNumber = parseTaskNumber(fullCommand, "mark");
+        boolean wasMarked = tasks.asList().get(taskNumber - 1).isMarked();
         Task task = tasks.mark(taskNumber);
         assert task.isMarked() : "A task returned by mark must be marked";
-        storage.save(tasks.asList());
+        saveWithStatusRollback(task, wasMarked);
         return ui.formatTaskMarked(task);
     }
 
@@ -185,9 +204,10 @@ public class Eden {
      */
     private String unmarkTask(String fullCommand) throws EdenException {
         int taskNumber = parseTaskNumber(fullCommand, "unmark");
+        boolean wasMarked = tasks.asList().get(taskNumber - 1).isMarked();
         Task task = tasks.unmark(taskNumber);
         assert !task.isMarked() : "A task returned by unmark must be unmarked";
-        storage.save(tasks.asList());
+        saveWithStatusRollback(task, wasMarked);
         return ui.formatTaskUnmarked(task);
     }
 
@@ -207,7 +227,7 @@ public class Eden {
      */
     private String addDeadline(String fullCommand) throws EdenException {
         String details = fullCommand.substring("deadline".length()).trim();
-        String[] parts = details.split("(?:^|\\s+)/by\\s+", 2);
+        String[] parts = details.split("(?i)(?:^|\\s+)/by\\s+", 2);
         String description = parts[0].trim();
         if (description.isEmpty()) {
             throw new EdenException("OOPS!!! The description of a deadline cannot be empty.");
@@ -225,12 +245,12 @@ public class Eden {
      */
     private String addEvent(String fullCommand) throws EdenException {
         String details = fullCommand.substring("event".length()).trim();
-        String[] fromParts = details.split("\\s+/from\\s+", 2);
+        String[] fromParts = details.split("(?i)\\s+/from\\s+", 2);
         if (fromParts.length < 2) {
             throw new EdenException(EVENT_FORMAT_ERROR);
         }
 
-        String[] toParts = fromParts[1].split("\\s+/to\\s+", 2);
+        String[] toParts = fromParts[1].split("(?i)\\s+/to\\s+", 2);
         String description = fromParts[0].trim();
         if (description.isEmpty()) {
             throw new EdenException("OOPS!!! The description of an event cannot be empty.");
@@ -247,10 +267,13 @@ public class Eden {
      */
     private String addTask(Task task) throws EdenException {
         int previousTaskCount = tasks.size();
+        List<Task> updatedTasks = new ArrayList<>(tasks.asList());
+        updatedTasks.add(task);
+        storage.save(updatedTasks);
+
         tasks.add(task);
         assert tasks.size() == previousTaskCount + 1
                 : "Adding one task must increase the task count by one";
-        storage.save(tasks.asList());
         return ui.formatTaskAdded(task, tasks.size());
     }
 
@@ -260,11 +283,50 @@ public class Eden {
     private String deleteTask(String fullCommand) throws EdenException {
         int taskNumber = parseTaskNumber(fullCommand, "delete");
         int previousTaskCount = tasks.size();
-        Task task = tasks.delete(taskNumber);
+        List<Task> updatedTasks = new ArrayList<>(tasks.asList());
+        Task task = updatedTasks.remove(taskNumber - 1);
+        storage.save(updatedTasks);
+
+        Task deletedTask = tasks.delete(taskNumber);
+        assert deletedTask == task : "The persisted and deleted tasks must be identical";
         assert tasks.size() == previousTaskCount - 1
                 : "Deleting one task must decrease the task count by one";
-        storage.save(tasks.asList());
         return ui.formatTaskDeleted(task, tasks.size());
+    }
+
+    /**
+     * Saves a status change and restores the previous status if saving fails.
+     */
+    private void saveWithStatusRollback(Task task, boolean wasMarked) throws EdenException {
+        try {
+            storage.save(tasks.asList());
+        } catch (EdenException exception) {
+            if (wasMarked) {
+                task.mark();
+            } else {
+                task.unmark();
+            }
+            throw exception;
+        }
+    }
+
+    /**
+     * Rejects extra text supplied to a command that accepts no arguments.
+     */
+    private void requireNoArguments(String fullCommand, String commandWord)
+            throws EdenException {
+        if (!fullCommand.equalsIgnoreCase(commandWord)) {
+            throw new EdenException("OOPS!!! The " + commandWord
+                    + " command does not accept extra details.");
+        }
+    }
+
+    /**
+     * Records and returns a user-facing error response.
+     */
+    private String recordError(String message) {
+        isLastResponseError = true;
+        return message;
     }
 
     /**

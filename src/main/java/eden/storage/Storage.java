@@ -54,7 +54,7 @@ public class Storage {
                 }
             }
             return tasks;
-        } catch (IOException exception) {
+        } catch (IOException | SecurityException exception) {
             throw new EdenException("OOPS!!! I couldn't read the task data from "
                     + filePath + ".", exception);
         }
@@ -77,7 +77,7 @@ public class Storage {
                     .map(Task::toDataString)
                     .toList();
             Files.write(filePath, lines, StandardCharsets.UTF_8);
-        } catch (IOException exception) {
+        } catch (IOException | SecurityException exception) {
             throw new EdenException("OOPS!!! I couldn't save the task data to "
                     + filePath + ".", exception);
         }
