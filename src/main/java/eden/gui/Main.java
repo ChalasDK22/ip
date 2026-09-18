@@ -41,7 +41,9 @@ public class Main extends Application {
         mainWindow.setEden(eden);
 
         stage.setTitle("Eden");
-        stage.setResizable(false);
+        stage.setMinWidth(420);
+        stage.setMinHeight(520);
+        stage.setResizable(true);
         stage.setScene(new Scene(root));
         stage.show();
     }
